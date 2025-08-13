@@ -1,16 +1,57 @@
-#   CELOLEND
+# CELOLEND
 
 A decentralized peer-to-peer lending platform built on Celo that uses Self Protocol for identity verification and algorithmic interest rate models.
 
+## Mission
+
+To democratize access to credit by creating a transparent, fair, and inclusive lending ecosystem where verified users can access capital without traditional banking barriers, while lenders earn competitive returns through intelligent risk assessment.
+
+## The Problem
+
+### Traditional Lending Challenges
+
+- **Exclusion**: 1.7 billion people globally lack access to traditional banking services
+- **High Barriers**: Credit checks, collateral requirements, and geographic restrictions limit access
+- **Opaque Pricing**: Hidden fees and arbitrary interest rates create uncertainty
+- **Centralized Risk**: Single points of failure and institutional bias
+- **Limited Transparency**: Borrowers and lenders can't verify loan terms or risk assessment
+
+### DeFi Lending Issues
+
+- **Sybil Attacks**: Fake identities and multiple accounts manipulate lending pools
+- **No Credit History**: All borrowers treated equally regardless of repayment history
+- **Volatile Rates**: Unpredictable interest rates based purely on supply/demand
+- **Collateral Requirements**: High collateral ratios exclude many potential borrowers
+
+## The Solution
+
+### Self Protocol Integration
+
+- **Verified Identity**: Privacy-preserving passport verification prevents Sybil attacks
+- **Trust Network**: Real-world identity creates accountability and reduces fraud
+- **Global Access**: Anyone with a passport can participate, regardless of location
+
+### Algorithmic Interest Rate Model
+
+- **Risk-Based Pricing**: Interest rates reflect actual borrower risk and credit history
+- **Market Equilibrium**: Dynamic rates balance supply and demand automatically
+- **Transparent Calculation**: All factors visible and verifiable on-chain
+
+### Decentralized Architecture
+
+- **P2P Matching**: Direct borrower-lender connections without intermediaries
+- **Smart Contract Security**: Automated loan management and collateral protection
+- **Celo Integration**: Fast, low-cost transactions with mobile-first design
+
 ## Overview
 
-This platform enables verified users to lend and borrow CELO/cUSD with dynamic interest rates based on credit scores and collateral. Users verify their identity through Self Protocol's privacy-preserving passport verification.
+This platform enables verified users to lend and borrow CELO and mento stablecoins with dynamic interest rates based on credit scores and collateral. Users verify their identity through Self Protocol's privacy-preserving passport verification.
 
 ## Key Features
 
 - **Identity Verification**: Self Protocol integration for Sybil-resistant lending
 - **Algorithmic Interest Rates**: Dynamic pricing based on credit scores and market conditions
-- **Collateral Support**: CELO and cUSD
+- **Collateral Support**: CELO and mento stablecoins
 - **On-Chain Credit Scoring**: Build reputation through successful loan repayments
 - **P2P Marketplace**: Direct borrower-lender matching
 - **Modern UI**: Next.js frontend with responsive design
@@ -37,7 +78,7 @@ P2P Matching → Fund Transfer → Repayment Tracking
 
 ## Tech Stack
 
-- **Blockchain**: Celo
+- **Blockchain**: Celo Testnet (Alfajores)
 - **Identity**: Self Protocol
 - **Frontend**: Next.js + Tailwind CSS + Radix UI
 - **Smart Contracts**: Solidity + Hardhat
