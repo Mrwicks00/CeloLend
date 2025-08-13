@@ -1,4 +1,4 @@
-# Self P2P Lending Protocol
+#   CELOLEND
 
 A decentralized peer-to-peer lending platform built on Celo that uses Self Protocol for identity verification and algorithmic interest rate models.
 
