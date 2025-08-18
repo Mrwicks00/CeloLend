@@ -296,7 +296,14 @@
 
 /* Organic gradient backgrounds */
 .bg-gradient-organic {
-  background: linear-gradient(135deg, #e54041 0%, #ff4757 25%, #ff6f61 50%, #e57373 75%, #8b1e3f 100%);
+  background: linear-gradient(
+    135deg,
+    #e54041 0%,
+    #ff4757 25%,
+    #ff6f61 50%,
+    #e57373 75%,
+    #8b1e3f 100%
+  );
   background-size: 300% 300%;
   animation: gradient-shift 8s ease infinite;
 }

@@ -1,12 +1,117 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Menu, X, Wallet } from "lucide-react"
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Menu, X, Wallet, ChevronDown, LogOut } from "lucide-react";
+import { useWallet } from "@/contexts/WalletContext";
 
 export function Navigation() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isWalletMenuOpen, setIsWalletMenuOpen] = useState(false);
+  const walletMenuRef = useRef<HTMLDivElement>(null);
+  const {
+    isAuthenticated,
+    address,
+    balance,
+    chainId,
+    isWrongNetwork,
+    login,
+    logout,
+    switchToAlfajores,
+  } = useWallet();
+
+  const formatAddress = (addr: string) => {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
+  const formatBalance = (bal: string) => {
+    return parseFloat(bal).toFixed(4);
+  };
+
+  // Close wallet menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        walletMenuRef.current &&
+        !walletMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsWalletMenuOpen(false);
+      }
+    }
+
+    if (isWalletMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isWalletMenuOpen]);
+
+  const WalletButton = () => {
+    if (!isAuthenticated || !address) {
+      return (
+        <Button onClick={login} className="btn-primary text-white px-6">
+          <Wallet className="w-4 h-4 mr-2" />
+          Connect Wallet
+        </Button>
+      );
+    }
+
+    return (
+      <div className="relative" ref={walletMenuRef}>
+        <Button
+          onClick={() => setIsWalletMenuOpen(!isWalletMenuOpen)}
+          className={`btn-primary text-white px-6 ${
+            isWrongNetwork ? "bg-red-600 hover:bg-red-700" : ""
+          }`}
+        >
+          <Wallet className="w-4 h-4 mr-2" />
+          {isWrongNetwork ? "Wrong Network" : formatAddress(address)}
+          <ChevronDown className="w-4 h-4 ml-2" />
+        </Button>
+
+        {isWalletMenuOpen && (
+          <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+            <div className="p-4 border-b border-gray-100">
+              <div className="text-sm text-gray-600">Wallet Address</div>
+              <div className="font-mono text-sm text-gray-900">
+                {formatAddress(address)}
+              </div>
+              <div className="text-sm text-gray-600 mt-2">Balance</div>
+              <div className="font-semibold text-gray-900">
+                {formatBalance(balance)} CELO
+              </div>
+              {isWrongNetwork && (
+                <div className="mt-2">
+                  <Button
+                    onClick={switchToAlfajores}
+                    size="sm"
+                    className="w-full bg-red-600 hover:bg-red-700"
+                  >
+                    Switch to Alfajores
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div className="p-2">
+              <Button
+                onClick={() => {
+                  logout();
+                  setIsWalletMenuOpen(false);
+                }}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Disconnect
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
@@ -22,27 +127,43 @@ export function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/marketplace" className="text-gray-600 hover:text-[#B03060] transition-colors">
+            <Link
+              href="/marketplace"
+              className="text-gray-600 hover:text-[#B03060] transition-colors"
+            >
               Marketplace
             </Link>
-            <Link href="/dashboard" className="text-gray-600 hover:text-[#B03060] transition-colors">
+            <Link
+              href="/dashboard"
+              className="text-gray-600 hover:text-[#B03060] transition-colors"
+            >
               Dashboard
             </Link>
-            <Link href="/help" className="text-gray-600 hover:text-[#B03060] transition-colors">
+            <Link
+              href="/help"
+              className="text-gray-600 hover:text-[#B03060] transition-colors"
+            >
               Help
             </Link>
-            <Link href="/onboarding" className="text-gray-600 hover:text-[#B03060] transition-colors">
+            <Link
+              href="/onboarding"
+              className="text-gray-600 hover:text-[#B03060] transition-colors"
+            >
               Get Started
             </Link>
-            <Button className="btn-primary text-white px-6">
-              <Wallet className="w-4 h-4 mr-2" />
-              Connect Wallet
-            </Button>
+            <WalletButton />
           </div>
 
           {/* Mobile menu button */}
-          <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <button
+            className="md:hidden p-2"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
 
@@ -50,26 +171,41 @@ export function Navigation() {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-100">
             <div className="flex flex-col space-y-4">
-              <Link href="/marketplace" className="text-gray-600 hover:text-[#B03060] transition-colors">
+              <Link
+                key="marketplace"
+                href="/marketplace"
+                className="text-gray-600 hover:text-[#B03060] transition-colors"
+              >
                 Marketplace
               </Link>
-              <Link href="/dashboard" className="text-gray-600 hover:text-[#B03060] transition-colors">
+              <Link
+                key="dashboard"
+                href="/dashboard"
+                className="text-gray-600 hover:text-[#B03060] transition-colors"
+              >
                 Dashboard
               </Link>
-              <Link href="/help" className="text-gray-600 hover:text-[#B03060] transition-colors">
+              <Link
+                key="help"
+                href="/help"
+                className="text-gray-600 hover:text-[#B03060] transition-colors"
+              >
                 Help
               </Link>
-              <Link href="/onboarding" className="text-gray-600 hover:text-[#B03060] transition-colors">
+              <Link
+                key="onboarding"
+                href="/onboarding"
+                className="text-gray-600 hover:text-[#B03060] transition-colors"
+              >
                 Get Started
               </Link>
-              <Button className="btn-primary text-white w-full">
-                <Wallet className="w-4 h-4 mr-2" />
-                Connect Wallet
-              </Button>
+              <div key="wallet-button">
+                <WalletButton />
+              </div>
             </div>
           </div>
         )}
       </div>
     </nav>
-  )
+  );
 }

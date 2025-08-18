@@ -1,7 +1,25 @@
 {
-  "name": "hardhat-project",
+  "name": "celolend-contracts",
+  "version": "1.0.0",
+  "description": "CeloLend - Decentralized lending platform on Celo with Self Protocol KYC",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:alfajores": "hardhat run scripts/deploy.ts --network alfajores",
+    "deploy:celolend-only": "hardhat run scripts/deploy-celoLend-only.ts --network alfajores",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "verify:alfajores": "hardhat verify --network alfajores",
+    "test": "hardhat test",
+    "clean": "hardhat clean"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
-    "hardhat": "^2.26.3"
+    "hardhat": "^2.26.3",
+    "typescript": "^5.9.2",
+    "dotenv": "^16.4.7"
+  },
+  "dependencies": {
+    "@chainlink/contracts": "^1.4.0",
+    "@openzeppelin/contracts": "^5.4.0",
+    "@selfxyz/contracts": "^1.2.0"
   }
 }

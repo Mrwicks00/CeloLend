@@ -1,8 +1,15 @@
-import Link from "next/link"
-import { Navigation } from "@/components/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Shield, Zap, TrendingUp, Phone, Wallet } from "lucide-react"
+import Link from "next/link";
+import { Navigation } from "@/components/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  ArrowRight,
+  Shield,
+  Zap,
+  TrendingUp,
+  Phone,
+  Wallet,
+} from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -23,8 +30,9 @@ export default function LandingPage() {
               </span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Access instant loans with your digital assets as collateral. No credit checks, no paperwork - just fast,
-              secure, and transparent lending powered by blockchain technology.
+              Access instant loans with your digital assets as collateral. No
+              credit checks, no paperwork - just fast, secure, and transparent
+              lending powered by blockchain technology.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/onboarding">
@@ -33,7 +41,9 @@ export default function LandingPage() {
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Button className="btn-secondary px-8 py-3 text-lg">Become a Lender</Button>
+              <Button className="btn-secondary px-8 py-3 text-lg">
+                Become a Lender
+              </Button>
             </div>
           </div>
         </div>
@@ -46,9 +56,12 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose DeFi Lend?</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Why Choose DeFi Lend?
+            </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Experience the future of lending with our innovative platform designed for everyone
+              Experience the future of lending with our innovative platform
+              designed for everyone
             </p>
           </div>
 
@@ -58,8 +71,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-[#e54041] to-[#ff4757] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Zap className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Instant Loans</h3>
-                <p className="text-gray-600">Get approved and funded in minutes, not days</p>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Instant Loans
+                </h3>
+                <p className="text-gray-600">
+                  Get approved and funded in minutes, not days
+                </p>
               </CardContent>
             </Card>
 
@@ -68,8 +85,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-[#ff4757] to-[#ff6f61] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Secure & Transparent</h3>
-                <p className="text-gray-600">Smart contracts ensure complete transparency</p>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Secure & Transparent
+                </h3>
+                <p className="text-gray-600">
+                  Smart contracts ensure complete transparency
+                </p>
               </CardContent>
             </Card>
 
@@ -78,8 +99,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-[#ff6f61] to-[#e57373] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Phone className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Mobile Friendly</h3>
-                <p className="text-gray-600">Access via smartphone or feature phone</p>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Mobile Friendly
+                </h3>
+                <p className="text-gray-600">
+                  Access via smartphone or feature phone
+                </p>
               </CardContent>
             </Card>
 
@@ -88,8 +113,12 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-[#e57373] to-[#8b1e3f] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Competitive Rates</h3>
-                <p className="text-gray-600">Market-driven interest rates for best value</p>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Competitive Rates
+                </h3>
+                <p className="text-gray-600">
+                  Market-driven interest rates for best value
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -102,8 +131,12 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">How It Works</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Simple steps to get your loan or start lending</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              How It Works
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Simple steps to get your loan or start lending
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -111,8 +144,12 @@ export default function LandingPage() {
               <div className="w-16 h-16 bg-gradient-to-br from-[#e54041] to-[#ff4757] rounded-full flex items-center justify-center mx-auto mb-4 animate-gentle-bounce">
                 <span className="text-white font-bold text-xl">1</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Connect & Verify</h3>
-              <p className="text-gray-600">Connect your wallet or verify via phone number</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Connect & Verify
+              </h3>
+              <p className="text-gray-600">
+                Connect your wallet or verify via phone number
+              </p>
             </div>
 
             <div className="text-center">
@@ -122,8 +159,12 @@ export default function LandingPage() {
               >
                 <span className="text-white font-bold text-xl">2</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Deposit Collateral</h3>
-              <p className="text-gray-600">Secure your loan with digital or tokenized assets</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Deposit Collateral
+              </h3>
+              <p className="text-gray-600">
+                Secure your loan with digital or tokenized assets
+              </p>
             </div>
 
             <div className="text-center">
@@ -133,8 +174,12 @@ export default function LandingPage() {
               >
                 <span className="text-white font-bold text-xl">3</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Get Funded</h3>
-              <p className="text-gray-600">Receive your loan instantly to your wallet</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Get Funded
+              </h3>
+              <p className="text-gray-600">
+                Receive your loan instantly to your wallet
+              </p>
             </div>
           </div>
         </div>
@@ -146,9 +191,12 @@ export default function LandingPage() {
         <div className="absolute bottom-10 right-10 w-16 h-16 bg-white opacity-30 blob-shape-2 floating-delayed"></div>
 
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative z-10">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Get Started?</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Ready to Get Started?
+          </h2>
           <p className="text-xl text-white/90 mb-8">
-            Join thousands of users already using DeFi Lend for their financial needs
+            Join thousands of users already using DeFi Lend for their financial
+            needs
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/onboarding">
@@ -175,24 +223,36 @@ export default function LandingPage() {
                 </div>
                 <span className="font-bold text-xl">CeloLend</span>
               </div>
-              <p className="text-gray-400">Democratizing access to financial services through blockchain technology.</p>
+              <p className="text-gray-400">
+                Democratizing access to financial services through blockchain
+                technology.
+              </p>
             </div>
 
             <div>
               <h4 className="font-semibold mb-4">Platform</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href="/marketplace" className="hover:text-white transition-colors">
+                  <Link
+                    href="/marketplace"
+                    className="hover:text-white transition-colors"
+                  >
                     Marketplace
                   </Link>
                 </li>
                 <li>
-                  <Link href="/dashboard" className="hover:text-white transition-colors">
+                  <Link
+                    href="/dashboard"
+                    className="hover:text-white transition-colors"
+                  >
                     Dashboard
                   </Link>
                 </li>
                 <li>
-                  <Link href="/collateral" className="hover:text-white transition-colors">
+                  <Link
+                    href="/collateral"
+                    className="hover:text-white transition-colors"
+                  >
                     Collateral
                   </Link>
                 </li>
@@ -203,17 +263,26 @@ export default function LandingPage() {
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href="/help" className="hover:text-white transition-colors">
+                  <Link
+                    href="/help"
+                    className="hover:text-white transition-colors"
+                  >
                     Help Center
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="hover:text-white transition-colors">
+                  <Link
+                    href="/contact"
+                    className="hover:text-white transition-colors"
+                  >
                     Contact
                   </Link>
                 </li>
                 <li>
-                  <Link href="/docs" className="hover:text-white transition-colors">
+                  <Link
+                    href="/docs"
+                    className="hover:text-white transition-colors"
+                  >
                     Documentation
                   </Link>
                 </li>
@@ -224,12 +293,18 @@ export default function LandingPage() {
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
-                  <Link href="/privacy" className="hover:text-white transition-colors">
+                  <Link
+                    href="/privacy"
+                    className="hover:text-white transition-colors"
+                  >
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="hover:text-white transition-colors">
+                  <Link
+                    href="/terms"
+                    className="hover:text-white transition-colors"
+                  >
                     Terms of Service
                   </Link>
                 </li>
@@ -243,5 +318,5 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
