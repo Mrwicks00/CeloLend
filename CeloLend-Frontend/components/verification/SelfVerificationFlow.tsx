@@ -43,18 +43,18 @@ export function SelfVerificationFlow({
       const app = new SelfAppBuilder({
         version: 2,
         appName: "CeloLend",
-        scope: config.scopeHash, // Your original scope seed
+        scope: "celolend", // Scope seed for frontend QR code
         endpoint: celoLendAddress, // Use your CeloLend contract address as endpoint
         logoBase64: "https://i.postimg.cc/mrmVf9hm/self.png", // You can replace with your logo
         userId: userId,
-        endpointType: "staging_https", // Use "production_https" for mainnet
+        endpointType: "staging_celo", // Use "production_https" for mainnet
         userIdType: "hex",
         userDefinedData: "CeloLend Identity Verification",
         disclosures: {
           // Verification requirements (must match backend)
           minimumAge: 18,
           ofac: false,
-          excludedCountries: [],
+          excludedCountries: ["AFG"],
 
           // Disclosure requests (what users reveal)
           nationality: true,

@@ -6,6 +6,7 @@
     "compile": "hardhat compile",
     "deploy:alfajores": "hardhat run scripts/deploy.ts --network alfajores",
     "deploy:celolend-only": "hardhat run scripts/deploy-celoLend-only.ts --network alfajores",
+    "set-scope": "hardhat run scripts/set-scope.ts --network alfajores",
     "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
     "verify:alfajores": "hardhat verify --network alfajores",
     "test": "hardhat test",

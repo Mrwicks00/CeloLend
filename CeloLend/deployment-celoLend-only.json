@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-08-18T23:23:09.696Z",
+  "network": "alfajores",
+  "deployer": "0xB24023434c3670E100068C925A87fE8F500d909a",
+  "contracts": {
+    "CeloLend": "0x882b5943E106C057040666F4682dd901c1E08A98",
+    "PriceOracle": "0x4cF9c155E2b3d54C56DfB82c548229AA700Abcb6",
+    "CollateralVault": "0xc727E73CCD6B6Dd1eB524d6e24d7CbC9FE15CdEc",
+    "CreditScore": "0xdeeB5eAE3082A7A8b3946d5e32E7998777dA20ea",
+    "MentoIntegration": "0xA1b20Efeb3Dce92344330beAE8e358621740eAF3"
+  },
+  "selfProtocol": {
+    "scopeSeed": "TO_BE_SET",
+    "scopeHash": "TO_BE_SET",
+    "configId": "0x04ffced1e767b034d19b10013e1dab7baf1ed5d94113b4cb9a63a042bf49eb62"
+  },
+  "loanLimits": {
+    "minLoanAmount": "10.0",
+    "maxLoanAmount": "10000.0"
+  },
+  "supportedTokens": [
+    "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1",
+    "0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F",
+    "0xE4D517785D091D3c54818832dB6094bcc2744545",
+    "0x2DEf4285787d58a2f811AF24755A8150622f4361"
+  ]
+}
