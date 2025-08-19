@@ -129,12 +129,34 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
         address userWallet = msg.sender;
         bytes32 userIdentifier = bytes32(output.userIdentifier);
 
+        // Check if user is already verified
+        require(
+            userIdentifiers[userWallet] == bytes32(0),
+            "Wallet already verified"
+        );
+
+        // Check if this user identifier is already mapped to another wallet
+        require(
+            identifierToWallet[userIdentifier] == address(0),
+            "User identifier already mapped to another wallet"
+        );
+
         // Store the mapping between wallet and Self identifier
         userIdentifiers[userWallet] = userIdentifier;
         identifierToWallet[userIdentifier] = userWallet;
 
-        // Initialize credit score for new verified users
-        creditScore.initializeUser(userWallet);
+        // Initialize credit score for new verified users (only if not already initialized)
+        try creditScore.initializeUser(userWallet) {
+            // Successfully initialized
+        } catch Error(string memory reason) {
+            if (
+                keccak256(bytes(reason)) !=
+                keccak256(bytes("User already initialized"))
+            ) {
+                revert(reason);
+            }
+            // User already initialized, that's fine
+        }
 
         emit UserVerified(userWallet, userIdentifier, output.nationality);
     }

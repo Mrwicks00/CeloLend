@@ -8,8 +8,8 @@ async function main() {
   console.log("📝 Using account:", deployer.address);
 
   // Configuration - UPDATE THESE VALUES
-  const CELOLEND_ADDRESS = "0x882b5943E106C057040666F4682dd901c1E08A98"; // Replace with your deployed address
-  const SCOPE_HASH = "1981536065571106722092969880896331232724889181651674157778378879891802756585"; // Replace with scope hash from Self tools
+  const CELOLEND_ADDRESS = "0xc7ea37e8484bE71a6F6cf3495C261ad3Df2fE933"; // Replace with your deployed address
+  const SCOPE_HASH = "6003299275507246847362587980618077130602962582967478131974371350478469506114"; // Replace with scope hash from Self tools
   const SCOPE_SEED = "celolend"; // Replace with your scope seed
 
   console.log("🔗 CeloLend Address:", CELOLEND_ADDRESS);

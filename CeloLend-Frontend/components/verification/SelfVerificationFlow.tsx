@@ -54,7 +54,7 @@ export function SelfVerificationFlow({
           // Verification requirements (must match backend)
           minimumAge: 18,
           ofac: false,
-          excludedCountries: ["AFG"],
+          excludedCountries: [],
 
           // Disclosure requests (what users reveal)
           nationality: true,
