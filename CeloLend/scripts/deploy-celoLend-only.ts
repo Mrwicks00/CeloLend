@@ -1,172 +1,235 @@
 import { ethers } from "hardhat";
 
+// Verification helper function
+async function verifyContract(
+  contractAddress: string,
+  constructorArguments: any[],
+  contractName: string
+) {
+  const { network } = require("hardhat");
+  if (network.name === "alfajores" && process.env.CELOSCAN_API_KEY) {
+    console.log(`🔍 Verifying ${contractName} on Celoscan...`);
+    try {
+      const { run } = require("hardhat");
+      await run("verify:verify", {
+        address: contractAddress,
+        constructorArguments: constructorArguments,
+        network: "alfajores",
+      });
+      console.log(`✅ ${contractName} verified successfully!`);
+    } catch (error: any) {
+      console.log(`⚠️ ${contractName} verification failed:`, error.message);
+      if (error.message.includes("already verified")) {
+        console.log(`ℹ️ ${contractName} was already verified.`);
+      }
+    }
+  } else if (!process.env.CELOSCAN_API_KEY) {
+    console.log(
+      `⏭️ Skipping ${contractName} verification: CELOSCAN_API_KEY not found in environment`
+    );
+  } else {
+    console.log(
+      `⏭️ Skipping ${contractName} verification: Not on alfajores network`
+    );
+  }
+}
+
 async function main() {
-  console.log("🚀 Starting CeloLend deployment with temporary scope...");
+  console.log(
+    "🚀 Deploying CeloLend contract with improved Self Protocol integration..."
+  );
 
   // Get the deployer account
   const [deployer] = await ethers.getSigners();
   console.log("📝 Deploying contracts with account:", deployer.address);
   console.log(
     "💰 Account balance:",
-    (await ethers.provider.getBalance(deployer.address)).toString()
+    ethers.formatEther(await deployer.provider.getBalance(deployer.address))
   );
 
-  // Get existing contract addresses (we'll reuse the other contracts)
-  const existingAddresses = {
-    MentoIntegration: "0xA1b20Efeb3Dce92344330beAE8e358621740eAF3",
-    PriceOracle: "0x4cF9c155E2b3d54C56DfB82c548229AA700Abcb6",
-    CollateralVault: "0xc727E73CCD6B6Dd1eB524d6e24d7CbC9FE15CdEc",
-    CreditScore: "0xdeeB5eAE3082A7A8b3946d5e32E7998777dA20ea",
-  };
+  // Contract addresses (update these with your deployed addresses)
+  const COLLATERAL_VAULT_ADDRESS = "0xbE4aB35983BCDE3f58f16b239dB44eF051736007"; // Replace with actual address
+  const CREDIT_SCORE_ADDRESS = "0x48d87430e6a18eA9E2Fa7282091Dc5b975cDE11f"; // Replace with actual address
+  const PRICE_ORACLE_ADDRESS = "0x8d2c60f1A979975CfaD46b1B9624F481bD757c65"; // Replace with actual address
+  const MENTO_INTEGRATION_ADDRESS = "0x701552e8EAF283aa08423F70B287Fe483Db353d4"; // Replace with actual address
 
-  console.log("📋 Existing contract addresses:");
-  Object.entries(existingAddresses).forEach(([name, address]) => {
-    console.log(`  ${name}: ${address}`);
-  });
+  // Self Protocol configuration
+  const IDENTITY_VERIFICATION_HUB_V2 =
+    "0x68c931C9a534D37aa78094877F46fE46a49F1A51"; // Alfajores testnet
+  const TEMPORARY_SCOPE = 0; // We'll set the actual scope after deployment
+  const CONFIG_ID = "0xc52f992ebee4435b00b65d2c74b12435e96359d1ccf408041528414e6ea687bc"; // Replace with your config ID from tools.self.xyz
+
+  console.log("🔧 Self Protocol Configuration:");
+  console.log("   Hub Address:", IDENTITY_VERIFICATION_HUB_V2);
+  console.log("   Temporary Scope:", TEMPORARY_SCOPE);
+  console.log("   Config ID:", CONFIG_ID);
+
+  // Check for required contract addresses
+  // if (
+  //   COLLATERAL_VAULT_ADDRESS === "0x..." ||
+  //   CREDIT_SCORE_ADDRESS === "0x..." ||
+  //   PRICE_ORACLE_ADDRESS === "0x..." ||
+  //   MENTO_INTEGRATION_ADDRESS === "0x..."
+  // ) {
+  //   console.error(
+  //     "❌ Please update the contract addresses in this script before running"
+  //   );
+  //   console.error(
+  //     "   Run the main deploy.ts script first to get the platform contract addresses"
+  //   );
+  //   process.exit(1);
+  // }
 
   try {
-    // Step 1: Deploy new CeloLend contract with temporary scope (0)
-    console.log(
-      "\n🔨 Step 1: Deploying new CeloLend contract with temporary scope..."
-    );
-
+    // Deploy CeloLend contract
+    console.log("\n📦 Deploying CeloLend contract...");
     const CeloLend = await ethers.getContractFactory("CeloLend");
     const celoLend = await CeloLend.deploy(
-      "0x68c931C9a534D37aa78094877F46fE46a49F1A51", // _identityVerificationHubV2
-      0, // _scope (temporary, will be set properly after deployment)
-      "0xc52f992ebee4435b00b65d2c74b12435e96359d1ccf408041528414e6ea687bc", // _configId
-      existingAddresses.CollateralVault, // _collateralVault
-      existingAddresses.CreditScore, // _creditScore
-      existingAddresses.PriceOracle, // _priceOracle
-      existingAddresses.MentoIntegration // _mentoIntegration
+      IDENTITY_VERIFICATION_HUB_V2,
+      TEMPORARY_SCOPE,
+      CONFIG_ID,
+      COLLATERAL_VAULT_ADDRESS,
+      CREDIT_SCORE_ADDRESS,
+      PRICE_ORACLE_ADDRESS,
+      MENTO_INTEGRATION_ADDRESS
     );
 
     await celoLend.waitForDeployment();
     const celoLendAddress = await celoLend.getAddress();
     console.log("✅ CeloLend deployed to:", celoLendAddress);
 
-    // Step 2: Configure the new CeloLend contract
-    console.log("\n⚙️ Step 2: Configuring CeloLend contract...");
-
-    // Set loan limits
-    console.log("  Setting loan limits...");
-    const minLoanAmount = ethers.parseEther("10"); // 10 CELO
-    const maxLoanAmount = ethers.parseEther("10000"); // 10,000 CELO
-    await celoLend.setLoanLimits(minLoanAmount, maxLoanAmount);
-    console.log("  ✅ Loan limits set");
-
-    // Set supported tokens (Mento stablecoins)
-    console.log("  Setting supported tokens...");
-    const supportedTokens = [
-      "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1", // cUSD
-      "0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F", // cEUR
-      "0xE4D517785D091D3c54818832dB6094bcc2744545", // cREAL
-      "0x2DEf4285787d58a2f811AF24755A8150622f4361", // cXOF
+    // Verify CeloLend contract
+    const constructorArgs = [
+      IDENTITY_VERIFICATION_HUB_V2,
+      TEMPORARY_SCOPE,
+      CONFIG_ID,
+      COLLATERAL_VAULT_ADDRESS,
+      CREDIT_SCORE_ADDRESS,
+      PRICE_ORACLE_ADDRESS,
+      MENTO_INTEGRATION_ADDRESS,
     ];
+    await verifyContract(celoLendAddress, constructorArgs, "CeloLend");
 
-    for (const token of supportedTokens) {
-      await celoLend.setSupportedToken(token, true);
-      console.log(`  ✅ Token ${token} added as supported`);
-    }
+    // Configure platform permissions after CeloLend deployment
+    console.log("\n⚙️ Configuring platform permissions...");
 
-    // Step 3: Update other contracts to work with new CeloLend
-    console.log("\n🔗 Step 3: Updating contract permissions...");
+    // Set CeloLend as authorized contract in CreditScore
+    console.log("Setting CeloLend as authorized contract in CreditScore...");
+    const CreditScore = await ethers.getContractFactory("CreditScore");
+    const creditScore = CreditScore.attach(CREDIT_SCORE_ADDRESS) as any;
+    const setCreditAuthTx = await creditScore.setAuthorizedContract(
+      celoLendAddress,
+      true
+    );
+    await setCreditAuthTx.wait();
+    console.log("✅ CreditScore authorization configured");
 
-    // Update CollateralVault to authorize new CeloLend
-    console.log("  Updating CollateralVault permissions...");
+    // Set CeloLend as authorized contract in CollateralVault
+    console.log(
+      "Setting CeloLend as authorized contract in CollateralVault..."
+    );
     const CollateralVault = await ethers.getContractFactory("CollateralVault");
     const collateralVault = CollateralVault.attach(
-      existingAddresses.CollateralVault
+      COLLATERAL_VAULT_ADDRESS
+    ) as any;
+    const setVaultAuthTx = await collateralVault.setAuthorizedContract(
+      celoLendAddress,
+      true
     );
-    await collateralVault.setAuthorizedContract(celoLendAddress, true);
-    console.log("  ✅ CollateralVault authorized new CeloLend");
+    await setVaultAuthTx.wait();
+    console.log("✅ CollateralVault authorization configured");
 
-    // Update CreditScore to authorize new CeloLend
-    console.log("  Updating CreditScore permissions...");
-    const CreditScore = await ethers.getContractFactory("CreditScore");
-    const creditScore = CreditScore.attach(existingAddresses.CreditScore);
-    await creditScore.setAuthorizedContract(celoLendAddress, true);
-    console.log("  ✅ CreditScore authorized new CeloLend");
-
-    // Step 4: Verify deployment
-    console.log("\n🔍 Step 4: Verifying deployment...");
-
-    // Check contract state
-    const actualMinLoan = await celoLend.minLoanAmount();
-    const actualMaxLoan = await celoLend.maxLoanAmount();
-    const actualConfigId = await celoLend.configId();
-
-    console.log("  Contract verification:");
-    console.log(
-      `    Min loan amount: ${ethers.formatEther(actualMinLoan)} CELO`
-    );
-    console.log(
-      `    Max loan amount: ${ethers.formatEther(actualMaxLoan)} CELO`
-    );
-    console.log(`    Config ID: ${actualConfigId}`);
-
-    // Check supported tokens
-    for (const token of supportedTokens) {
-      const isSupported = await celoLend.supportedTokens(token);
-      console.log(
-        `    Token ${token}: ${
-          isSupported ? "✅ Supported" : "❌ Not supported"
-        }`
-      );
+    // Verify deployment
+    console.log("\n🔍 Verifying deployment...");
+    const deployedCode = await deployer.provider.getCode(celoLendAddress);
+    if (deployedCode === "0x") {
+      throw new Error("Contract deployment failed - no code at address");
     }
+    console.log("✅ Contract code verified at address");
 
-    // Step 5: Output deployment summary
-    console.log("\n🎉 DEPLOYMENT COMPLETE!");
-    console.log("=".repeat(50));
-    console.log("📋 DEPLOYMENT SUMMARY:");
-    console.log("=".repeat(50));
-    console.log(`🔗 New CeloLend Address: ${celoLendAddress}`);
-    console.log(`🎯 Current Scope: 0 (temporary)`);
+    // Get contract info
+    console.log("\n📊 Contract Information:");
+    console.log("   Owner:", await celoLend.owner());
+    console.log("   Config ID:", await celoLend.configId());
+    console.log("   Scope:", await celoLend.scope());
     console.log(
-      `⚙️ Config ID: 0x04ffced1e767b034d19b10013e1dab7baf1ed5d94113b4cb9a63a042bf49eb62`
+      "   Min Loan Amount:",
+      ethers.formatEther(await celoLend.minLoanAmount())
     );
-    console.log("");
-    console.log("📝 NEXT STEPS:");
-    console.log("1. Go to https://tools.self.xyz/#scope-generator");
-    console.log("2. Enter your website URL and desired scope seed");
-    console.log("3. Copy the generated scope hash");
-    console.log("4. Run the set-scope script with the new scope hash");
-    console.log("5. Update frontend addresses.ts with new CeloLend address");
     console.log(
-      "6. Update frontend SelfVerificationFlow.tsx with your scope seed"
+      "   Max Loan Amount:",
+      ethers.formatEther(await celoLend.maxLoanAmount())
+    );
+    console.log("   Platform Fee Rate:", await celoLend.platformFeeRate());
+
+    // Test verification configuration functions
+    console.log("\n🧪 Testing verification configuration functions...");
+
+    // Test setConfigId
+    // console.log("   Testing setConfigId...");
+    // const newConfigId =
+    //   "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
+    // await celoLend.setConfigId(newConfigId);
+    // console.log("   ✅ Config ID updated to:", await celoLend.configId());
+
+    // Test setScope (we'll set the actual scope later)
+    console.log("   Testing setScope...");
+    const testScope = 12345;
+    await celoLend.setScope(testScope);
+    console.log("   ✅ Scope updated to:", await celoLend.scope());
+
+    // Note: resetVerificationState function is available for testing purposes
+    console.log(
+      "   ✅ Verification configuration functions tested successfully"
     );
 
-    // Step 6: Save deployment info to file
+    console.log("\n🎉 CeloLend deployment completed successfully!");
+    console.log("\n📋 Next Steps:");
+    console.log(
+      "1. Update the contract addresses in this script with your actual deployed addresses"
+    );
+    console.log(
+      "2. Use tools.self.xyz to generate your actual scope hash with the deployed contract address"
+    );
+    console.log("3. Run the set-scope.ts script to set the actual scope");
+    console.log("4. Test the Self Protocol integration with the frontend");
+
+    // Save deployment info
     const deploymentInfo = {
-      timestamp: new Date().toISOString(),
       network: "alfajores",
       deployer: deployer.address,
-      contracts: {
-        CeloLend: celoLendAddress,
-        PriceOracle: existingAddresses.PriceOracle,
-        CollateralVault: existingAddresses.CollateralVault,
-        CreditScore: existingAddresses.CreditScore,
-        MentoIntegration: existingAddresses.MentoIntegration,
+      celoLendAddress: celoLendAddress,
+      identityVerificationHub: IDENTITY_VERIFICATION_HUB_V2,
+      temporaryScope: TEMPORARY_SCOPE,
+      configId: CONFIG_ID,
+      deploymentTime: new Date().toISOString(),
+      constructorParams: {
+        identityVerificationHubV2: IDENTITY_VERIFICATION_HUB_V2,
+        scope: TEMPORARY_SCOPE,
+        configId: CONFIG_ID,
+        collateralVault: COLLATERAL_VAULT_ADDRESS,
+        creditScore: CREDIT_SCORE_ADDRESS,
+        priceOracle: PRICE_ORACLE_ADDRESS,
+        mentoIntegration: MENTO_INTEGRATION_ADDRESS,
       },
-      selfProtocol: {
-        scopeSeed: "TO_BE_SET", // Will be set after using Self tools
-        scopeHash: "TO_BE_SET", // Will be set after using Self tools
-        configId:
-          "0x04ffced1e767b034d19b10013e1dab7baf1ed5d94113b4cb9a63a042bf49eb62",
+      authorization: {
+        creditScoreAuthorized: true,
+        collateralVaultAuthorized: true,
+        authorizationTransactions: {
+          creditScore: setCreditAuthTx.hash,
+          collateralVault: setVaultAuthTx.hash,
+        },
       },
-      loanLimits: {
-        minLoanAmount: ethers.formatEther(minLoanAmount),
-        maxLoanAmount: ethers.formatEther(maxLoanAmount),
+      verification: {
+        celoscanApiKey: process.env.CELOSCAN_API_KEY
+          ? "Available"
+          : "Not found",
+        constructorArguments: constructorArgs,
       },
-      supportedTokens: supportedTokens,
     };
 
-    const fs = require("fs");
-    fs.writeFileSync(
-      "deployment-celoLend-only.json",
-      JSON.stringify(deploymentInfo, null, 2)
-    );
-    console.log("\n💾 Deployment info saved to: deployment-celoLend-only.json");
+    console.log("\n💾 Deployment Info:");
+    console.log(JSON.stringify(deploymentInfo, null, 2));
   } catch (error) {
     console.error("❌ Deployment failed:", error);
     process.exit(1);

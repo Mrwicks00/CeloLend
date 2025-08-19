@@ -20,6 +20,9 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
     // Configuration ID for Self Protocol verification
     bytes32 public configId;
 
+    // Verification configuration storage (for dynamic config management)
+    SelfStructs.VerificationConfigV2 public verificationConfig;
+
     // Platform contracts
     CollateralVault public collateralVault;
     CreditScore public creditScore;
@@ -88,6 +91,7 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
     event LoanRequestCancelled(uint256 indexed loanId);
     event PlatformFeeUpdated(uint256 newFeeRate);
     event TokenSupported(address indexed token, bool supported);
+    event VerificationConfigUpdated(bytes32 newConfigId);
 
     constructor(
         address _identityVerificationHubV2,
@@ -129,13 +133,8 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
         address userWallet = msg.sender;
         bytes32 userIdentifier = bytes32(output.userIdentifier);
 
-        // Check if user is already verified
-        require(
-            userIdentifiers[userWallet] == bytes32(0),
-            "Wallet already verified"
-        );
-
         // Check if this user identifier is already mapped to another wallet
+        // This prevents the same passport from being used multiple times
         require(
             identifierToWallet[userIdentifier] == address(0),
             "User identifier already mapped to another wallet"
@@ -167,6 +166,58 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
             "User not verified with Self Protocol"
         );
         _;
+    }
+
+    // VERIFICATION CONFIGURATION MANAGEMENT (from reference implementation)
+
+    /**
+     * @notice Set the verification configuration for the contract
+     * @param config The verification configuration to set
+     */
+    function setVerificationConfig(
+        SelfStructs.VerificationConfigV2 memory config
+    ) external onlyOwner {
+        verificationConfig = config;
+        _identityVerificationHubV2.setVerificationConfigV2(verificationConfig);
+    }
+
+    /**
+     * @notice Set the verification configuration without updating the hub
+     * @param config The verification configuration to set
+     */
+    function setVerificationConfigNoHub(
+        SelfStructs.VerificationConfigV2 memory config
+    ) external onlyOwner {
+        verificationConfig = config;
+    }
+
+    /**
+     * @notice Set the configuration ID
+     * @param _configId The new configuration ID
+     */
+    function setConfigId(bytes32 _configId) external onlyOwner {
+        configId = _configId;
+        emit VerificationConfigUpdated(_configId);
+    }
+
+    /**
+     * @notice Expose the internal _setScope function for scope management
+     * @param newScope The new scope value to set
+     */
+    function setScope(uint256 newScope) external onlyOwner {
+        _setScope(newScope);
+    }
+
+    /**
+     * @notice Reset verification state for testing purposes
+     * @dev This function is only for testing and should be removed in production
+     */
+    function resetVerificationState(address user) external onlyOwner {
+        bytes32 identifier = userIdentifiers[user];
+        if (identifier != bytes32(0)) {
+            delete userIdentifiers[user];
+            delete identifierToWallet[identifier];
+        }
     }
 
     // Create loan request
@@ -459,14 +510,6 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
     }
 
     // ADMIN FUNCTIONS
-
-    function setConfigId(bytes32 _configId) external onlyOwner {
-        configId = _configId;
-    }
-
-    function setScope(uint256 _scope) external onlyOwner {
-        _setScope(_scope);
-    }
 
     function setPlatformFeeRate(uint256 _feeRate) external onlyOwner {
         require(_feeRate <= 1000, "Fee too high"); // Max 10%

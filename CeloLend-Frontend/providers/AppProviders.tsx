@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { PrivyProviderWrapper } from "./PrivyProviderWrapper";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { SelfProtocolProvider } from "@/contexts/SelfProtocolContext";
+import { ContractProvider } from "@/contexts/ContractContext";
 import { ThemeProvider } from "@/components/theme-provider";
 
 interface AppProvidersProps {
@@ -20,7 +21,9 @@ export function AppProviders({ children }: AppProvidersProps) {
     >
       <PrivyProviderWrapper>
         <WalletProvider>
-          <SelfProtocolProvider>{children}</SelfProtocolProvider>
+          <ContractProvider>
+            <SelfProtocolProvider>{children}</SelfProtocolProvider>
+          </ContractProvider>
         </WalletProvider>
       </PrivyProviderWrapper>
     </ThemeProvider>

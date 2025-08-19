@@ -5,7 +5,7 @@ async function main() {
   console.log("=".repeat(50));
 
   // Your deployed CeloLend contract address
-  const CELOLEND_ADDRESS = "0x882b5943E106C057040666F4682dd901c1E08A98";
+  const CELOLEND_ADDRESS = "0x8f6415a4918d730f766031a7ea9ebcC8Ec1eB689";
 
   try {
     const CeloLend = await ethers.getContractFactory("CeloLend");
@@ -19,9 +19,8 @@ async function main() {
 
     // Get some sample addresses to check
     const sampleAddresses = [
-      "0x1234567890123456789012345678901234567890",
-      "0x2345678901234567890123456789012345678901",
-      "0x3456789012345678901234567890123456789012",
+      "0xB24023434c3670E100068C925A87fE8F500d909a"
+      
     ];
 
     for (const addr of sampleAddresses) {

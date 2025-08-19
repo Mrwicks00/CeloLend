@@ -1,13 +1,20 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useWallet } from "./WalletContext";
+import { useContract } from "./ContractContext";
 import { getSelfProtocolConfig } from "@/lib/contracts/addresses";
 
 interface SelfProtocolState {
   isVerified: boolean;
   userIdentifier: string | null;
-  verificationStatus: 'unverified' | 'pending' | 'verified';
+  verificationStatus: "unverified" | "pending" | "verified";
   isVerifying: boolean;
 }
 
@@ -28,60 +35,109 @@ interface SelfProtocolProviderProps {
 
 export function SelfProtocolProvider({ children }: SelfProtocolProviderProps) {
   const { address, chainId } = useWallet();
+  const { celoLend } = useContract();
   const [state, setState] = useState<SelfProtocolState>({
     isVerified: false,
     userIdentifier: null,
-    verificationStatus: 'unverified',
+    verificationStatus: "unverified",
     isVerifying: false,
   });
 
-  // Check if user is verified on contract
-  const checkVerificationStatus = useCallback(async () => {
-    if (!address) return;
 
+  const checkVerificationStatus = useCallback(async () => {
+    if (!address || !celoLend) {
+      return;
+    }
+  
     try {
-      setState(prev => ({ ...prev, isVerifying: true }));
+      console.log("Checking verification for address:", address);
       
-      // TODO: Call contract to check if user is verified
-      // const celoLendContract = getCeloLendContract();
-      // const isVerified = await celoLendContract.isUserVerified(address);
-      // const userIdentifier = await celoLendContract.getUserIdentifier(address);
-      
-      // For now, simulate verification check
-      const isVerified = false; // This will be replaced with actual contract call
-      const userIdentifier = null;
-      
-      setState(prev => ({
+      const isVerified = await celoLend.isUserVerified(address);
+      const userIdentifier = await celoLend.getUserIdentifier(address);
+  
+      console.log("Contract response:", { isVerified, userIdentifier });
+  
+      const hasValidIdentifier = userIdentifier && 
+        userIdentifier !== "0x0000000000000000000000000000000000000000000000000000000000000000";
+  
+      setState((prev) => ({
         ...prev,
-        isVerified,
-        userIdentifier,
-        verificationStatus: isVerified ? 'verified' : 'unverified',
+        isVerified: isVerified && hasValidIdentifier,
+        userIdentifier: hasValidIdentifier ? userIdentifier : null,
+        verificationStatus: (isVerified && hasValidIdentifier) ? "verified" : "unverified",
         isVerifying: false,
       }));
     } catch (error) {
-      console.error('Error checking verification status:', error);
-      setState(prev => ({ ...prev, isVerifying: false }));
+      console.error("Error checking verification status:", error);
+      setState((prev) => ({ 
+        ...prev, 
+        isVerifying: false,
+        verificationStatus: "unverified",
+      }));
     }
-  }, [address]);
+  }, [address, celoLend]);
+
+  // Check if user is verified on contract
+  // const checkVerificationStatus = useCallback(async () => {
+  //   if (!address || !celoLend) {
+  //     console.log(
+  //       "checkVerificationStatus: Missing address or celoLend contract",
+  //       { address, celoLend: !!celoLend }
+  //     );
+  //     return;
+  //   }
+
+  //   try {
+  //     console.log(
+  //       "checkVerificationStatus: Checking verification for address:",
+  //       address
+  //     );
+  //     setState((prev) => ({ ...prev, isVerifying: true }));
+
+  //     // Call contract to check if user is verified
+  //     const isVerified = await celoLend.isUserVerified(address);
+  //     const userIdentifier = await celoLend.getUserIdentifier(address);
+
+  //     console.log("checkVerificationStatus: Contract response:", {
+  //       isVerified,
+  //       userIdentifier,
+  //     });
+
+  //     setState((prev) => ({
+  //       ...prev,
+  //       isVerified,
+  //       userIdentifier:
+  //         userIdentifier !==
+  //         "0x0000000000000000000000000000000000000000000000000000000000000000"
+  //           ? userIdentifier
+  //           : null,
+  //       verificationStatus: isVerified ? "verified" : "unverified",
+  //       isVerifying: false,
+  //     }));
+  //   } catch (error) {
+  //     console.error("Error checking verification status:", error);
+  //     setState((prev) => ({ ...prev, isVerifying: false }));
+  //   }
+  // }, [address, celoLend]);
 
   // Start verification process
   const startVerification = useCallback(() => {
     if (!address) {
-      console.error('No wallet address available');
+      console.error("No wallet address available");
       return;
     }
 
-    setState(prev => ({ 
-      ...prev, 
-      verificationStatus: 'pending',
-      isVerifying: true 
+    setState((prev) => ({
+      ...prev,
+      verificationStatus: "pending",
+      isVerifying: true,
     }));
 
     // Get Self Protocol configuration for current network
     const config = getSelfProtocolConfig(chainId || 44787);
-    
-    console.log('Starting Self Protocol verification with config:', config);
-    
+
+    console.log("Starting Self Protocol verification with config:", config);
+
     // The actual verification will be handled by the SelfVerificationFlow component
     // This context just manages the state
   }, [address, chainId]);
@@ -91,30 +147,71 @@ export function SelfProtocolProvider({ children }: SelfProtocolProviderProps) {
     setState({
       isVerified: false,
       userIdentifier: null,
-      verificationStatus: 'unverified',
+      verificationStatus: "unverified",
       isVerifying: false,
     });
   }, []);
 
   // Handle verification success from Self Protocol
-  const handleVerificationSuccess = useCallback(() => {
-    setState(prev => ({ 
-      ...prev, 
-      verificationStatus: 'verified',
-      isVerified: true,
-      isVerifying: false,
-      userIdentifier: address || 'unknown'
-    }));
-  }, [address]);
+  // Replace your handleVerificationSuccess with this simple approach
+const handleVerificationSuccess = useCallback(() => {
+  console.log("Self Protocol verification successful!");
+  
+  setState((prev) => ({
+    ...prev,
+    verificationStatus: "verified",
+    isVerified: true,
+    isVerifying: false,
+  }));
 
-  // Check verification status when address changes
+  // Simple delay and check - don't overcomplicate
+  setTimeout(() => {
+    checkVerificationStatus();
+  }, 3000); // Wait 3 seconds then check contract
+}, [checkVerificationStatus]);
+
+// Simplify checkVerificationStatus
+// const checkVerificationStatus = useCallback(async () => {
+//   if (!address || !celoLend) {
+//     return;
+//   }
+
+//   try {
+//     console.log("Checking verification for address:", address);
+    
+//     const isVerified = await celoLend.isUserVerified(address);
+//     const userIdentifier = await celoLend.getUserIdentifier(address);
+
+//     console.log("Contract response:", { isVerified, userIdentifier });
+
+//     const hasValidIdentifier = userIdentifier && 
+//       userIdentifier !== "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+//     setState((prev) => ({
+//       ...prev,
+//       isVerified: isVerified && hasValidIdentifier,
+//       userIdentifier: hasValidIdentifier ? userIdentifier : null,
+//       verificationStatus: (isVerified && hasValidIdentifier) ? "verified" : "unverified",
+//       isVerifying: false,
+//     }));
+//   } catch (error) {
+//     console.error("Error checking verification status:", error);
+//     setState((prev) => ({ 
+//       ...prev, 
+//       isVerifying: false,
+//       verificationStatus: "unverified",
+//     }));
+//   }
+// }, [address, celoLend]);
+
+  // Check verification status when address or contract changes
   useEffect(() => {
-    if (address) {
+    if (address && celoLend) {
       checkVerificationStatus();
-    } else {
+    } else if (!address) {
       resetVerification();
     }
-  }, [address, checkVerificationStatus, resetVerification]);
+  }, [address, celoLend, checkVerificationStatus, resetVerification]);
 
   const contextValue: SelfProtocolContextType = {
     ...state,
@@ -135,7 +232,9 @@ export function SelfProtocolProvider({ children }: SelfProtocolProviderProps) {
 export function useSelfProtocol() {
   const context = useContext(SelfProtocolContext);
   if (!context) {
-    throw new Error("useSelfProtocol must be used within a SelfProtocolProvider");
+    throw new Error(
+      "useSelfProtocol must be used within a SelfProtocolProvider"
+    );
   }
   return context;
 }

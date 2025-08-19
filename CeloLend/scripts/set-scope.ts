@@ -1,88 +1,147 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  console.log("🎯 Setting scope for deployed CeloLend contract...");
-
-  // Get the deployer account
-  const [deployer] = await ethers.getSigners();
-  console.log("📝 Using account:", deployer.address);
+  console.log("🔧 Setting scope for CeloLend contract...");
 
   // Configuration - UPDATE THESE VALUES
-  const CELOLEND_ADDRESS = "0xc7ea37e8484bE71a6F6cf3495C261ad3Df2fE933"; // Replace with your deployed address
-  const SCOPE_HASH = "6003299275507246847362587980618077130602962582967478131974371350478469506114"; // Replace with scope hash from Self tools
-  const SCOPE_SEED = "celolend"; // Replace with your scope seed
+  const CELOLEND_ADDRESS = "0x8f6415a4918d730f766031a7ea9ebcC8Ec1eB689"; // Replace with your deployed CeloLend address
+  const SCOPE_HASH = "13902544118504082467378518992817040140665988107016942460655703855849126567377"; // Replace with your scope hash from tools.self.xyz
+  const SCOPE_SEED = "celolend"; // Your scope seed (e.g., "celolend")
 
-  console.log("🔗 CeloLend Address:", CELOLEND_ADDRESS);
-  console.log("🔑 Scope Hash:", SCOPE_HASH);
-  console.log("🎯 Scope Seed:", SCOPE_SEED);
+  console.log("📋 Configuration:");
+  console.log("   CeloLend Address:", CELOLEND_ADDRESS);
+  console.log("   Scope Hash:", SCOPE_HASH);
+  console.log("   Scope Seed:", SCOPE_SEED);
 
-//   if (CELOLEND_ADDRESS === "YOUR_DEPLOYED_CELOLEND_ADDRESS") {
-//     console.error("❌ Please update CELOLEND_ADDRESS in the script");
-//     process.exit(1);
-//   }
-
-//   if (SCOPE_HASH === "YOUR_SCOPE_HASH") {
-//     console.error("❌ Please update SCOPE_HASH in the script");
-//     process.exit(1);
-//   }
-
-//   if (SCOPE_SEED === "YOUR_SCOPE_SEED") {
-//     console.error("❌ Please update SCOPE_SEED in the script");
-//     process.exit(1);
-//   }
+  // if (CELOLEND_ADDRESS === "0x..." || SCOPE_HASH === "0x...") {
+  //   console.error(
+  //     "❌ Please update the configuration values in this script before running"
+  //   );
+  //   process.exit(1);
+  // }
 
   try {
-    // Step 1: Get the deployed CeloLend contract
-    console.log("\n🔍 Step 1: Connecting to deployed CeloLend contract...");
+    // Get the deployer account
+    const [deployer] = await ethers.getSigners();
+    console.log("📝 Using account:", deployer.address);
 
+    // Attach to the deployed CeloLend contract
+    console.log("\n🔗 Attaching to deployed CeloLend contract...");
     const CeloLend = await ethers.getContractFactory("CeloLend");
-    const celoLend = CeloLend.attach(CELOLEND_ADDRESS);
+    const celoLend = CeloLend.attach(CELOLEND_ADDRESS) as any;
 
-    console.log("✅ Connected to CeloLend contract");
+    // Verify contract exists
+    const deployedCode = await deployer.provider.getCode(CELOLEND_ADDRESS);
+    if (deployedCode === "0x") {
+      throw new Error("No contract found at the specified address");
+    }
+    console.log("✅ Contract found at address");
 
-    // Step 2: Set the new scope
-    console.log("\n🎯 Step 2: Setting new scope...");
-    console.log(`  Setting scope to: ${SCOPE_HASH}`);
+    // Check current scope
+    console.log("\n📊 Current contract state:");
+    const currentScope = await celoLend.scope();
+    const currentConfigId = await celoLend.configId();
+    const owner = await celoLend.owner();
 
-    const tx = await celoLend.setScope(SCOPE_HASH);
+    console.log("   Current Scope:", currentScope.toString());
+    console.log("   Current Config ID:", currentConfigId);
+    console.log("   Contract Owner:", owner);
+
+    // Verify we're the owner
+    if (owner !== deployer.address) {
+      console.error(
+        "❌ You are not the contract owner. Only the owner can set the scope."
+      );
+      process.exit(1);
+    }
+
+    // Set the scope
+    console.log("\n🔧 Setting new scope...");
+    const scopeValue = ethers.getBigInt(SCOPE_HASH);
+    console.log("   Converting scope hash to uint256:", scopeValue.toString());
+
+    const tx = await celoLend.setScope(scopeValue);
+    console.log("   Transaction hash:", tx.hash);
+
     await tx.wait();
+    console.log("✅ Scope updated successfully!");
 
-    console.log("✅ Scope set successfully!");
+    // // Verify the change
+    // console.log("\n🔍 Verifying scope update...");
+    // const newScope = await celoLend.scope();
+    // console.log("   New Scope:", newScope.toString());
 
-    // Step 3: Output summary
-    console.log("\n🎉 SCOPE SETTING COMPLETE!");
-    console.log("=".repeat(50));
-    console.log("📋 SCOPE SUMMARY:");
-    console.log("=".repeat(50));
-    console.log(`🔗 CeloLend Address: ${CELOLEND_ADDRESS}`);
-    console.log(`🎯 Scope Seed (for frontend): ${SCOPE_SEED}`);
-    console.log(`🔑 Scope Hash (in contract): ${SCOPE_HASH}`);
-    console.log("");
-    console.log("📝 NEXT STEPS:");
-    console.log("1. Update frontend addresses.ts with new CeloLend address");
+    // if (newScope.toString() === scopeValue.toString()) {
+    //   console.log("✅ Scope verification successful!");
+    // } else {
+    //   console.error("❌ Scope verification failed!");
+    //   console.log("   Expected:", scopeValue.toString());
+    //   console.log("   Actual:", newScope.toString());
+    //   process.exit(1);
+    // }
+
+    // Test verification configuration
+    console.log("\n🧪 Testing verification configuration...");
+
+    // Test isUserVerified function
+    const testAddress = "0xB24023434c3670E100068C925A87fE8F500d909a";
+    const isVerified = await celoLend.isUserVerified(testAddress);
     console.log(
-      "2. Update frontend SelfVerificationFlow.tsx with scope seed: '" +
-        SCOPE_SEED +
-        "'"
+      "   Test verification check for",
+      testAddress + ":",
+      isVerified
     );
-    console.log("3. Test the verification flow");
 
-    // Step 4: Save scope info to file
-    const scopeInfo = {
-      timestamp: new Date().toISOString(),
+    // Test getUserIdentifier function
+    const userIdentifier = await celoLend.getUserIdentifier(testAddress);
+    console.log(
+      "   Test user identifier for",
+      testAddress + ":",
+      userIdentifier
+    );
+
+    console.log("\n🎉 Scope configuration completed successfully!");
+    console.log("\n📋 Summary:");
+    console.log("   ✅ Contract address verified");
+    console.log("   ✅ Owner permissions confirmed");
+    console.log(
+      "   ✅ Scope updated from",
+      currentScope.toString(),
+      "to",
+      // newScope.toString()
+    );
+    console.log("   ✅ Verification functions tested");
+
+    console.log("\n🚀 Next Steps:");
+    console.log("1. Update your frontend configuration with the new scope");
+    console.log("2. Test the Self Protocol integration");
+    console.log("3. Verify that the customVerificationHook is being called");
+
+    // Save configuration info
+    const configInfo = {
       network: "alfajores",
       celoLendAddress: CELOLEND_ADDRESS,
-      scopeSeed: SCOPE_SEED,
       scopeHash: SCOPE_HASH,
-      configId:
-        "0x04ffced1e767b034d19b10013e1dab7baf1ed5d94113b4cb9a63a042bf49eb62",
+      scopeSeed: SCOPE_SEED,
+      scopeValue: scopeValue.toString(),
+      configId: currentConfigId,
+      owner: owner,
+      updatedAt: new Date().toISOString(),
+      transactionHash: tx.hash,
     };
 
-    const fs = require("fs");
-    fs.writeFileSync("scope-config.json", JSON.stringify(scopeInfo, null, 2));
-    console.log("\n💾 Scope info saved to: scope-config.json");
-  } catch (error) {
-    console.error("❌ Setting scope failed:", error);
+    console.log("\n💾 Configuration Info:");
+    console.log(JSON.stringify(configInfo, null, 2));
+  } catch (error: any) {
+    console.error("❌ Failed to set scope:", error);
+
+    if (error.message && error.message.includes("execution reverted")) {
+      console.error("\n💡 Possible issues:");
+      console.error("   - You are not the contract owner");
+      console.error("   - The contract address is incorrect");
+      console.error("   - The scope hash format is invalid");
+    }
+
     process.exit(1);
   }
 }

@@ -27,9 +27,7 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: {
-      alfajores: process.env.CELOSCAN_API_KEY || "",
-    },
+    apiKey: process.env.CELOSCAN_API_KEY || "",
     customChains: [
       {
         network: "alfajores",

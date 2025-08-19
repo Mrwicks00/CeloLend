@@ -2,11 +2,11 @@
 export const CONTRACT_ADDRESSES = {
   // Alfajores Testnet
   alfajores: {
-    CeloLend: "0xc7ea37e8484bE71a6F6cf3495C261ad3Df2fE933",
-    PriceOracle: "0x4cF9c155E2b3d54C56DfB82c548229AA700Abcb6",
-    MentoIntegration: "0xA1b20Efeb3Dce92344330beAE8e358621740eAF3",
-    CollateralVault: "0xc727E73CCD6B6Dd1eB524d6e24d7CbC9FE15CdEc",
-    CreditScore: "0xdeeB5eAE3082A7A8b3946d5e32E7998777dA20ea",
+    CeloLend: "0x8f6415a4918d730f766031a7ea9ebcC8Ec1eB689",
+    PriceOracle: "0x8d2c60f1A979975CfaD46b1B9624F481bD757c65",
+    MentoIntegration: "0x701552e8EAF283aa08423F70B287Fe483Db353d4",
+    CollateralVault: "0xbE4aB35983BCDE3f58f16b239dB44eF051736007",
+    CreditScore: "0x48d87430e6a18eA9E2Fa7282091Dc5b975cDE11f",
   },
   // Celo Mainnet (placeholder for future deployment)
   celo: {
@@ -22,7 +22,7 @@ export const CONTRACT_ADDRESSES = {
 export const SELF_PROTOCOL_CONFIG = {
   alfajores: {
     hubAddress: "0x68c931C9a534D37aa78094877F46fE46a49F1A51",
-    scopeHash: "6003299275507246847362587980618077130602962582967478131974371350478469506114",
+    scopeHash: "1385138002009724011502436187071449526727391483686874775651647385677463704624",
     configId: "0xc52f992ebee4435b00b65d2c74b12435e96359d1ccf408041528414e6ea687bc",
   },
   celo: {

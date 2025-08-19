@@ -47,7 +47,7 @@ export function SelfVerificationFlow({
         endpoint: celoLendAddress, // Use your CeloLend contract address as endpoint
         logoBase64: "https://i.postimg.cc/mrmVf9hm/self.png", // You can replace with your logo
         userId: userId,
-        endpointType: "staging_celo", // Use "production_https" for mainnet
+        endpointType: "staging_celo", // For Celo testnet contract integration
         userIdType: "hex",
         userDefinedData: "CeloLend Identity Verification",
         disclosures: {
