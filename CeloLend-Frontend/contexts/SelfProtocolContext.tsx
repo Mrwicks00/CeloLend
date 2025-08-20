@@ -34,7 +34,7 @@ interface SelfProtocolProviderProps {
 }
 
 export function SelfProtocolProvider({ children }: SelfProtocolProviderProps) {
-  const { address, chainId } = useWallet();
+  const { address, chainId, isWrongNetwork } = useWallet();
   const { celoLend } = useContract();
   const [state, setState] = useState<SelfProtocolState>({
     isVerified: false,
@@ -127,6 +127,11 @@ export function SelfProtocolProvider({ children }: SelfProtocolProviderProps) {
       return;
     }
 
+    if (isWrongNetwork) {
+      // prompt user to switch; don’t start on the wrong chain
+      return;
+    }
+
     setState((prev) => ({
       ...prev,
       verificationStatus: "pending",
@@ -154,21 +159,24 @@ export function SelfProtocolProvider({ children }: SelfProtocolProviderProps) {
 
   // Handle verification success from Self Protocol
   // Replace your handleVerificationSuccess with this simple approach
-const handleVerificationSuccess = useCallback(() => {
-  console.log("Self Protocol verification successful!");
+  const handleVerificationSuccess = useCallback(() => {
+    setState(prev => ({ ...prev, verificationStatus: "verified", isVerified: true, isVerifying: false }));
   
-  setState((prev) => ({
-    ...prev,
-    verificationStatus: "verified",
-    isVerified: true,
-    isVerifying: false,
-  }));
-
-  // Simple delay and check - don't overcomplicate
-  setTimeout(() => {
-    checkVerificationStatus();
-  }, 3000); // Wait 3 seconds then check contract
-}, [checkVerificationStatus]);
+    let attempts = 0;
+    const maxAttempts = 15; // ~30s at 2s interval
+    const interval = setInterval(async () => {
+      attempts++;
+      await checkVerificationStatus();
+      setState(prev => {
+        if (prev.isVerified) {
+          clearInterval(interval);
+        }
+        return prev;
+      });
+      if (attempts >= maxAttempts) clearInterval(interval);
+    }, 2000);
+  }, [checkVerificationStatus]);
+  
 
 // Simplify checkVerificationStatus
 // const checkVerificationStatus = useCallback(async () => {

@@ -4,8 +4,8 @@ async function main() {
   console.log("🔧 Setting scope for CeloLend contract...");
 
   // Configuration - UPDATE THESE VALUES
-  const CELOLEND_ADDRESS = "0x8f6415a4918d730f766031a7ea9ebcC8Ec1eB689"; // Replace with your deployed CeloLend address
-  const SCOPE_HASH = "13902544118504082467378518992817040140665988107016942460655703855849126567377"; // Replace with your scope hash from tools.self.xyz
+  const CELOLEND_ADDRESS = "0x9a66C3b09eD66c7b7cf1ad3C04F87CCd022bbCf3"; // Replace with your deployed CeloLend address
+  const SCOPE_HASH = "5481686980359857257105898219431995075985161095766020325523210795386920118180"; // Replace with your scope hash from tools.self.xyz
   const SCOPE_SEED = "celolend"; // Your scope seed (e.g., "celolend")
 
   console.log("📋 Configuration:");

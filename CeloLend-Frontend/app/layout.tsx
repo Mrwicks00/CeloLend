@@ -2,6 +2,8 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { AppProviders } from "@/providers/AppProviders";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,6 +37,18 @@ export default function RootLayout({
     >
       <body className="font-sans">
         <AppProviders>{children}</AppProviders>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
       </body>
     </html>
   );

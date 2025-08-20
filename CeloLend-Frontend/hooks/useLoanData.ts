@@ -82,7 +82,7 @@ export function useLoanData() {
 
       for (const loanId of userLoanIds) {
         const loanRequest = await celoLend.getLoanRequest(loanId);
-        if (loanRequest.isActive) {
+        if (loanRequest.isActive && loanRequest.isFunded) {
           activeLoans++;
           if (loanRequest.borrower === address) {
             totalBorrowed += loanRequest.amount;

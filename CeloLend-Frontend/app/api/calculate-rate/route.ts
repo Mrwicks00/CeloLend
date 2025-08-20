@@ -86,8 +86,22 @@ class InterestRateCalculator {
 
     const riskFactor = collateralRiskFactors[collateralType] || 1.0;
 
-    // Higher collateral ratio = better discount
-    const baseDiscount = Math.min(this.delta, this.delta * (ratio - 1));
+    // Enhanced collateral discount - more aggressive reduction for higher ratios
+    let baseDiscount = 0;
+    
+    if (ratio >= 1.5) { // 150% minimum
+      // Base discount for meeting minimum
+      baseDiscount = this.delta * 0.5; // 1.5% base discount
+      
+      // Additional discount for higher collateral
+      const excessRatio = ratio - 1.5;
+      
+      if (excessRatio > 0) {
+        // Up to 3% additional discount for very high collateral
+        const additionalDiscount = Math.min(3.0, excessRatio * 6); // 6% discount per 1 ratio point above 1.5
+        baseDiscount += additionalDiscount;
+      }
+    }
 
     return Math.max(0, baseDiscount / riskFactor);
   }

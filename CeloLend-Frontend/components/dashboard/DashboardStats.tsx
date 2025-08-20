@@ -67,6 +67,11 @@ export function DashboardStats() {
               <p className="text-2xl font-bold text-card-foreground">
                 {userStats ? formatUSDValue(userStats.totalLent) : "$0.00"}
               </p>
+              {userStats && userStats.totalLent > BigInt(0) && (
+                <p className="text-sm text-muted-foreground">
+                  {(Number(userStats.totalLent) / 1e18).toFixed(2)} CELO
+                </p>
+              )}
             </div>
             <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
               <HandCoins className="w-6 h-6 text-primary-foreground" />
@@ -86,6 +91,11 @@ export function DashboardStats() {
               <p className="text-2xl font-bold text-card-foreground">
                 {userStats ? formatUSDValue(userStats.totalBorrowed) : "$0.00"}
               </p>
+              {userStats && userStats.totalBorrowed > BigInt(0) && (
+                <p className="text-sm text-muted-foreground">
+                  {(Number(userStats.totalBorrowed) / 1e18).toFixed(2)} CELO
+                </p>
+              )}
             </div>
             <div className="w-12 h-12 bg-gradient-to-br from-accent to-primary rounded-lg flex items-center justify-center">
               <ArrowDownRight className="w-6 h-6 text-primary-foreground" />

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-
+import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
@@ -35,16 +35,9 @@ import { useLoanLimits } from "@/hooks/useLoanLimits";
 import { formatTokenAmount } from "@/lib/contracts/contractHelpers";
 import { calculateInterestRate } from "@/lib/interestRateUtils";
 import { ethers } from "ethers";
-import { toast } from "react-toastify";
 
 export function CreateLoanRequest() {
-  const {
-    createLoanRequest,
-    checkTokenAllowance,
-    approveToken,
-    rate,
-    rateLoading,
-  } = useMarketplaceData();
+  const { createLoanRequest, rate, rateLoading } = useMarketplaceData();
   const { address, isConnected } = useWallet();
   const { isVerified, verificationStatus } = useSelfProtocol();
   const {
@@ -71,11 +64,6 @@ export function CreateLoanRequest() {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [calculatedRate, setCalculatedRate] = useState<number | null>(null);
-  const [approvalStatus, setApprovalStatus] = useState<{
-    needsApproval: boolean;
-    isApproving: boolean;
-    approved: boolean;
-  }>({ needsApproval: false, isApproving: false, approved: false });
 
   // Get selected tokens info
   const selectedLoanToken = tokens.find(
@@ -86,57 +74,8 @@ export function CreateLoanRequest() {
   );
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => {
-      const newData = { ...prev, [field]: value };
-
-      // Auto-fill collateral at 150% when loan amount changes
-      if (
-        field === "amount" &&
-        value &&
-        selectedLoanToken &&
-        selectedCollateralToken
-      ) {
-        const loanAmount = parseFloat(value);
-        const loanPrice = parseFloat(selectedLoanToken.priceFormatted);
-        const collateralPrice = parseFloat(
-          selectedCollateralToken.priceFormatted
-        );
-
-        if (loanAmount > 0 && loanPrice > 0 && collateralPrice > 0) {
-          // Calculate 150% collateral requirement
-          const loanValueUSD = loanAmount * loanPrice;
-          const requiredCollateralValueUSD = loanValueUSD * 1.5; // 150%
-          const requiredCollateralAmount =
-            requiredCollateralValueUSD / collateralPrice;
-
-          newData.collateralAmount = requiredCollateralAmount.toFixed(6);
-        }
-      }
-
-      // Auto-fill collateral when collateral token changes and loan amount exists
-      if (field === "collateralToken" && formData.amount && selectedLoanToken) {
-        const newCollateralToken = tokens.find((t) => t.address === value);
-        if (newCollateralToken) {
-          const loanAmount = parseFloat(formData.amount);
-          const loanPrice = parseFloat(selectedLoanToken.priceFormatted);
-          const collateralPrice = parseFloat(newCollateralToken.priceFormatted);
-
-          if (loanAmount > 0 && loanPrice > 0 && collateralPrice > 0) {
-            // Calculate 150% collateral requirement
-            const loanValueUSD = loanAmount * loanPrice;
-            const requiredCollateralValueUSD = loanValueUSD * 1.5; // 150%
-            const requiredCollateralAmount =
-              requiredCollateralValueUSD / collateralPrice;
-
-            newData.collateralAmount = requiredCollateralAmount.toFixed(6);
-          }
-        }
-      }
-
-      return newData;
-    });
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setError(null);
-    setCalculatedRate(null);
   };
 
   // Calculate collateral ratio for visual indicator
@@ -250,105 +189,6 @@ export function CreateLoanRequest() {
     }
   };
 
-  // Check if approval is needed for collateral token
-  const checkApprovalNeeded = useCallback(async () => {
-    if (
-      !selectedCollateralToken ||
-      !formData.collateralAmount ||
-      !isConnected
-    ) {
-      return;
-    }
-
-    // Skip for native token
-    if (formData.collateralToken === ethers.ZeroAddress) {
-      setApprovalStatus({
-        needsApproval: false,
-        isApproving: false,
-        approved: true,
-      });
-      return;
-    }
-
-    try {
-      const collateralAmount = ethers.parseUnits(
-        formData.collateralAmount,
-        selectedCollateralToken.decimals
-      );
-
-      // Check if approval is needed (this will return current status)
-      const result = await checkTokenAllowance(
-        formData.collateralToken,
-        collateralAmount,
-        "0x9a66C3b09eD66c7b7cf1ad3C04F87CCd022bbCf3" // CeloLend contract address
-      );
-
-      setApprovalStatus({
-        needsApproval: !result.approved,
-        isApproving: false,
-        approved: result.approved,
-      });
-    } catch (error) {
-      console.error("Error checking approval:", error);
-    }
-  }, [
-    selectedCollateralToken,
-    formData.collateralAmount,
-    formData.collateralToken,
-    isConnected,
-    checkTokenAllowance,
-  ]);
-
-  // Check approval when collateral token or amount changes
-  useEffect(() => {
-    if (formData.collateralToken && formData.collateralAmount) {
-      checkApprovalNeeded();
-    }
-  }, [
-    formData.collateralToken,
-    formData.collateralAmount,
-    checkApprovalNeeded,
-  ]);
-
-  const handleApprove = async () => {
-    if (!selectedCollateralToken || !formData.collateralAmount) return;
-
-    setApprovalStatus((prev) => ({ ...prev, isApproving: true }));
-    setError(null);
-
-    try {
-      toast.info(`Approving ${selectedCollateralToken.symbol}...`, {
-        autoClose: 2000,
-      });
-
-      await approveToken(
-        formData.collateralToken,
-        "0x9a66C3b09eD66c7b7cf1ad3C04F87CCd022bbCf3"
-      );
-
-      setApprovalStatus({
-        needsApproval: false,
-        isApproving: false,
-        approved: true,
-      });
-
-      toast.success(
-        `${selectedCollateralToken.symbol} approved successfully!`,
-        {
-          autoClose: 4000,
-        }
-      );
-    } catch (error) {
-      const errorMsg =
-        error instanceof Error ? error.message : "Failed to approve token";
-      setError(errorMsg);
-      setApprovalStatus((prev) => ({ ...prev, isApproving: false }));
-      toast.error(`Approval failed: ${errorMsg}`, {
-        autoClose: 7000,
-      });
-    }
-  };
-
   const handleSubmit = async () => {
     if (!isConnected || !isVerified) return;
     if (
@@ -373,8 +213,6 @@ export function CreateLoanRequest() {
     setError(null);
 
     try {
-      toast.info("Creating loan request...", { autoClose: 2000 });
-
       const amount = ethers.parseUnits(
         formData.amount,
         selectedLoanToken.decimals
@@ -394,11 +232,6 @@ export function CreateLoanRequest() {
         formData.purpose
       );
 
-      toast.success(
-        `Loan request created successfully! ${formData.amount} ${selectedLoanToken.symbol} requested.`,
-        { autoClose: 7000 }
-      );
-
       setFormData({
         amount: "",
         duration: "",
@@ -408,20 +241,10 @@ export function CreateLoanRequest() {
         purpose: "",
       });
       setCalculatedRate(null);
-      setApprovalStatus({
-        needsApproval: false,
-        isApproving: false,
-        approved: false,
-      });
     } catch (error) {
-      const errorMsg =
-        error instanceof Error
-          ? error.message
-          : "Failed to create loan request";
-      setError(errorMsg);
-      toast.error(`Failed to create loan request: ${errorMsg}`, {
-        autoClose: 7000,
-      });
+      setError(
+        error instanceof Error ? error.message : "Failed to create loan request"
+      );
     } finally {
       setIsCreating(false);
     }
@@ -433,10 +256,10 @@ export function CreateLoanRequest() {
       <div className="lg:col-span-2 space-y-6">
         {/* Header */}
         <div className="text-center lg:text-left">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-red-500 via-red-600 to-red-700 bg-clip-text text-transparent crypto-heading">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Create Loan Request
           </h1>
-          <p className="text-muted-foreground mt-3 text-base font-medium">
+          <p className="text-muted-foreground mt-2">
             Configure your loan with automated interest rates and instant
             collateral calculation
           </p>
@@ -499,13 +322,13 @@ export function CreateLoanRequest() {
         )}
 
         {/* 1. Loan Details Card */}
-        <Card className="card-crypto-info shadow-xl">
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-50">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center space-x-2 text-xl crypto-title">
-              <DollarSign className="w-6 h-6 text-blue-700" />
-              <span className="font-bold">Loan Details</span>
+            <CardTitle className="flex items-center space-x-2 text-xl">
+              <DollarSign className="w-6 h-6 text-blue-600" />
+              <span>Loan Details</span>
             </CardTitle>
-            <p className="text-sm text-muted-foreground font-medium">
+            <p className="text-sm text-muted-foreground">
               Configure your loan parameters
             </p>
           </CardHeader>
@@ -513,9 +336,7 @@ export function CreateLoanRequest() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Loan Token */}
               <div className="space-y-3">
-                <Label className="text-base font-semibold crypto-body">
-                  Loan Token
-                </Label>
+                <Label className="text-sm font-medium">Loan Token</Label>
                 <Select
                   value={formData.loanToken}
                   onValueChange={(value) =>
@@ -573,9 +394,7 @@ export function CreateLoanRequest() {
 
               {/* Loan Amount */}
               <div className="space-y-3">
-                <Label className="text-base font-semibold crypto-body">
-                  Loan Amount
-                </Label>
+                <Label className="text-sm font-medium">Loan Amount</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
@@ -591,7 +410,7 @@ export function CreateLoanRequest() {
                   </div>
                 )}
                 {selectedLoanToken && formData.amount && (
-                  <div className="text-base font-bold text-green-600 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
+                  <div className="text-xs text-muted-foreground bg-white/50 p-2 rounded">
                     ≈ $
                     {(
                       parseFloat(formData.amount) *
@@ -605,7 +424,7 @@ export function CreateLoanRequest() {
 
             {/* Duration */}
             <div className="space-y-3">
-              <Label className="text-base font-semibold crypto-body flex items-center space-x-2">
+              <Label className="text-sm font-medium flex items-center space-x-2">
                 <Clock className="w-4 h-4" />
                 <span>Duration (Days)</span>
               </Label>
@@ -622,13 +441,13 @@ export function CreateLoanRequest() {
         </Card>
 
         {/* 2. Collateral Card */}
-        <Card className="card-crypto-success shadow-xl">
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-green-50 to-emerald-50">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center space-x-2 text-xl crypto-title">
-              <Shield className="w-6 h-6 text-green-700" />
-              <span className="font-bold">Collateral</span>
+            <CardTitle className="flex items-center space-x-2 text-xl">
+              <Shield className="w-6 h-6 text-green-600" />
+              <span>Collateral</span>
             </CardTitle>
-            <p className="text-sm text-muted-foreground font-medium">
+            <p className="text-sm text-muted-foreground">
               Secure your loan with collateral
             </p>
           </CardHeader>
@@ -636,9 +455,7 @@ export function CreateLoanRequest() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Collateral Token */}
               <div className="space-y-3">
-                <Label className="text-base font-semibold crypto-body">
-                  Collateral Token
-                </Label>
+                <Label className="text-sm font-medium">Collateral Token</Label>
                 <Select
                   value={formData.collateralToken}
                   onValueChange={(value) =>
@@ -694,9 +511,7 @@ export function CreateLoanRequest() {
 
               {/* Collateral Amount */}
               <div className="space-y-3">
-                <Label className="text-base font-semibold crypto-body">
-                  Collateral Amount
-                </Label>
+                <Label className="text-sm font-medium">Collateral Amount</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
@@ -708,7 +523,7 @@ export function CreateLoanRequest() {
                   className="h-12"
                 />
                 {selectedCollateralToken && formData.collateralAmount && (
-                  <div className="text-base font-bold text-blue-600 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
+                  <div className="text-xs text-muted-foreground bg-white/50 p-2 rounded">
                     ≈ $
                     {(
                       parseFloat(formData.collateralAmount) *
@@ -720,7 +535,7 @@ export function CreateLoanRequest() {
               </div>
             </div>
 
-            {/* Collateral Info */}
+            {/* Collateral Ratio Visualization */}
             {currentCollateralRatio > 0 && (
               <div className="space-y-3 p-4 bg-white/50 rounded-lg border">
                 <div className="flex items-center justify-between">
@@ -736,10 +551,15 @@ export function CreateLoanRequest() {
                     </span>
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {currentCollateralRatio > 150
-                    ? "✅ Higher collateral may reduce your interest rate"
-                    : "⚠️ Minimum 150% collateral required"}
+                <Progress
+                  value={Math.min(currentCollateralRatio, 250)}
+                  max={250}
+                  className="h-3"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>150% Min</span>
+                  <span>200% Safe</span>
+                  <span>250%+</span>
                 </div>
               </div>
             )}
@@ -747,11 +567,11 @@ export function CreateLoanRequest() {
         </Card>
 
         {/* 3. Additional Details Card */}
-        <Card className="card-crypto-purple shadow-xl">
+        <Card className="shadow-lg border-0">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center space-x-2 text-xl crypto-title">
-              <Info className="w-6 h-6 text-purple-700" />
-              <span className="font-bold">Loan Purpose</span>
+            <CardTitle className="flex items-center space-x-2 text-xl">
+              <Info className="w-6 h-6 text-purple-600" />
+              <span>Loan Purpose</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -782,25 +602,25 @@ export function CreateLoanRequest() {
       {/* Summary Sidebar */}
       <div className="space-y-6">
         {/* Loan Summary */}
-        <Card className="sticky top-6 shadow-xl border-0 card-crypto-primary">
+        <Card className="sticky top-6 shadow-xl border-0 bg-gradient-to-br from-purple-50 to-blue-50">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center space-x-2 crypto-title">
-              <TrendingUp className="w-5 h-5 text-red-700" />
-              <span className="font-bold">Loan Summary</span>
+            <CardTitle className="flex items-center space-x-2">
+              <TrendingUp className="w-5 h-5 text-purple-600" />
+              <span>Loan Summary</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {selectedLoanToken && formData.amount ? (
               <>
                 <div className="flex justify-between items-center p-3 bg-white/60 rounded-lg">
-                  <span className="text-sm font-medium text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     Loan Amount
                   </span>
                   <div className="text-right">
                     <div className="font-semibold">
                       {formData.amount} {selectedLoanToken.symbol}
                     </div>
-                    <div className="text-sm font-bold text-green-600">
+                    <div className="text-xs text-muted-foreground">
                       $
                       {(
                         parseFloat(formData.amount) *
@@ -831,7 +651,7 @@ export function CreateLoanRequest() {
                         {formData.collateralAmount}{" "}
                         {selectedCollateralToken.symbol}
                       </div>
-                      <div className="text-sm font-bold text-blue-600">
+                      <div className="text-xs text-muted-foreground">
                         $
                         {(
                           parseFloat(formData.collateralAmount) *
@@ -886,45 +706,15 @@ export function CreateLoanRequest() {
                     {rateLoading ? "Calculating..." : "Calculate Rate"}
                   </Button>
 
-                  {/* Token Approval Button */}
-                  {formData.collateralToken !== ethers.ZeroAddress &&
-                    approvalStatus.needsApproval && (
-                      <Button
-                        onClick={handleApprove}
-                        disabled={approvalStatus.isApproving}
-                        variant="outline"
-                        className="w-full border-yellow-500 text-yellow-700 hover:bg-yellow-50"
-                      >
-                        {approvalStatus.isApproving
-                          ? "Approving Token..."
-                          : `Approve ${
-                              selectedCollateralToken?.symbol || "Token"
-                            }`}
-                      </Button>
-                    )}
-
-                  {/* Approval Status Indicator */}
-                  {formData.collateralToken !== ethers.ZeroAddress &&
-                    approvalStatus.approved && (
-                      <div className="flex items-center justify-center p-2 bg-green-50 rounded-lg border border-green-200">
-                        <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
-                        <span className="text-sm font-medium text-green-700">
-                          {selectedCollateralToken?.symbol} Approved
-                        </span>
-                      </div>
-                    )}
-
                   <Button
                     onClick={handleSubmit}
                     disabled={
                       !isConnected ||
                       !isVerified ||
                       isCreating ||
-                      !calculatedRate ||
-                      (formData.collateralToken !== ethers.ZeroAddress &&
-                        !approvalStatus.approved)
+                      !calculatedRate
                     }
-                    className="w-full h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 font-semibold text-base tracking-wide"
+                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                   >
                     {isCreating ? "Creating Request..." : "Create Loan Request"}
                   </Button>
@@ -942,11 +732,11 @@ export function CreateLoanRequest() {
         </Card>
 
         {/* Platform Info */}
-        <Card className="border-0 bg-gradient-to-br from-gray-50 to-slate-100 shadow-lg">
+        <Card className="border-0 bg-gradient-to-br from-gray-50 to-slate-100">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center space-x-2 text-lg crypto-title">
-              <Info className="w-5 h-5 text-gray-700" />
-              <span className="font-bold">Platform Info</span>
+            <CardTitle className="flex items-center space-x-2 text-lg">
+              <Info className="w-5 h-5 text-gray-600" />
+              <span>Platform Info</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -985,3 +775,4 @@ export function CreateLoanRequest() {
     </div>
   );
 }
+

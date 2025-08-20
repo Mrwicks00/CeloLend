@@ -61,7 +61,7 @@ export function MarketplaceStats({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center">
             <p className="text-2xl font-bold text-primary">
-              {formatTokenAmount(stats.totalActiveRequests)}
+              {Number(stats.totalActiveRequests)}
             </p>
             <p className="text-sm text-muted-foreground">
               Active Loan Requests
@@ -69,13 +69,18 @@ export function MarketplaceStats({
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-primary">
-              {formatTokenAmount(stats.totalFundedAmount)}
+              {stats.totalFundedAmount === BigInt(0)
+                ? "0.00 CELO"
+                : `${Number(stats.totalFundedAmount) / 1e18} CELO`}
             </p>
             <p className="text-sm text-muted-foreground">Total Funded Amount</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-primary">
-              {stats.averageInterestRate.toFixed(1)}%
+              {isNaN(stats.averageInterestRate)
+                ? "0.0"
+                : stats.averageInterestRate.toFixed(1)}
+              %
             </p>
             <p className="text-sm text-muted-foreground">Avg Interest Rate</p>
           </div>

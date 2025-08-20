@@ -88,42 +88,54 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
           : "https://forno.celo.org"
       );
 
-      // Initialize contracts (read-only for now)
+      // Get signer from the window.ethereum provider for transactions
+      let contractRunner: ethers.ContractRunner = provider;
+      if (typeof window !== 'undefined' && window.ethereum && 
+          typeof window.ethereum.request === 'function') {
+        try {
+          const browserProvider = new ethers.BrowserProvider(window.ethereum as unknown as ethers.Eip1193Provider);
+          contractRunner = await browserProvider.getSigner();
+        } catch (signerError) {
+          console.warn("Could not get signer, using read-only provider:", signerError);
+        }
+      }
+
+      // Initialize contracts with contract runner (signer or provider)
       const celoLend = new ethers.Contract(
         addresses.CeloLend,
         CELO_LEND_ABI,
-        provider
+        contractRunner
       );
 
       const priceOracle = new ethers.Contract(
         addresses.PriceOracle,
         PRICE_ORACLE_ABI,
-        provider
+        contractRunner
       );
 
       const collateralVault = new ethers.Contract(
         addresses.CollateralVault,
         COLLATERAL_VAULT_ABI,
-        provider
+        contractRunner
       );
 
       const creditScore = new ethers.Contract(
         addresses.CreditScore,
         CREDIT_SCORE_ABI,
-        provider
+        contractRunner
       );
 
       const mentoIntegration = new ethers.Contract(
         addresses.MentoIntegration,
         MENTO_INTEGRATION_ABI,
-        provider
+        contractRunner
       );
 
       // Note: LoanAgreement might not be deployed yet, using CeloLend address as placeholder
       const loanAgreement = new ethers.Contract(
         addresses.CeloLend,
         LOAN_AGREEMENT_ABI,
-        provider
+        contractRunner
       );
 
       setContracts({

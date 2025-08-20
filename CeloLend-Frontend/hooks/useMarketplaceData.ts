@@ -55,11 +55,14 @@ export function useMarketplaceData() {
     setError(null);
 
     try {
-      const requests = await celoLend.getActiveLoanRequests();
+      const requestIds = await celoLend.getActiveLoanRequests();
       const formattedRequests: LoanRequest[] = [];
 
-      for (const request of requests) {
+      for (const requestId of requestIds) {
         try {
+          // Get the full loan request details
+          const request = await celoLend.getLoanRequest(requestId);
+
           // Get borrower credit score
           let borrowerCreditScore = 0;
           let borrowerCompletedLoans = 0;
@@ -67,18 +70,43 @@ export function useMarketplaceData() {
 
           if (creditScoreContract) {
             try {
-              const userProfile = await creditScoreContract.getUserProfile(
+              const userStats = await creditScoreContract.getUserStats(
                 request.borrower
               );
-              borrowerCreditScore = Number(userProfile.creditScore);
-              borrowerCompletedLoans = Number(userProfile.completedLoans);
-              borrowerDefaultedLoans = Number(userProfile.defaultedLoans);
+              borrowerCreditScore = Number(userStats.creditScore);
+              borrowerCompletedLoans = Number(userStats.successfulLoans);
+              borrowerDefaultedLoans = Number(userStats.defaultedLoans);
             } catch (error) {
               console.warn(
                 "Could not fetch credit score for borrower:",
                 request.borrower
               );
             }
+          }
+
+          // Determine status based on contract data
+          let status: "open" | "funding" | "funded" | "repaid" = "open";
+          if (request.isFunded) {
+            status = "funded";
+          }
+
+          // Get token symbol for collateral
+          let collateralType = "CELO";
+          if (
+            request.collateralToken ===
+            "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
+          ) {
+            collateralType = "cUSD";
+          } else if (
+            request.collateralToken ===
+            "0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F"
+          ) {
+            collateralType = "cEUR";
+          } else if (
+            request.collateralToken ===
+            "0xE4D517785D091D3c54818832dB6094bcc2744545"
+          ) {
+            collateralType = "cREAL";
           }
 
           formattedRequests.push({
@@ -88,10 +116,10 @@ export function useMarketplaceData() {
             interestRate: request.interestRate,
             duration: request.duration,
             collateralAmount: request.collateralAmount,
-            collateralType: request.collateralType,
-            purpose: request.purpose,
-            status: request.status as "open" | "funding" | "funded" | "repaid",
-            fundedAmount: request.fundedAmount,
+            collateralType,
+            purpose: "General Purpose", // Default purpose - could improve this
+            status,
+            fundedAmount: request.isFunded ? request.amount : BigInt(0),
             createdAt: request.createdAt,
             borrowerCreditScore: borrowerCreditScore || 0,
             borrowerCompletedLoans: borrowerCompletedLoans || 0,
@@ -134,13 +162,113 @@ export function useMarketplaceData() {
     [celoLend, isConnected, fetchLoanRequests]
   );
 
+  // Check token allowance
+  const checkTokenAllowance = useCallback(
+    async (tokenAddress: string, amount: bigint, spenderAddress: string) => {
+      if (!isConnected || !address) {
+        throw new Error("Wallet not connected");
+      }
+
+      // Skip approval for native token (CELO)
+      if (tokenAddress === ethers.ZeroAddress) {
+        return { needsApproval: false, approved: true };
+      }
+
+      try {
+        // Get token contract
+        const tokenContract = new ethers.Contract(
+          tokenAddress,
+          ["function allowance(address,address) view returns (uint256)"],
+          celoLend?.runner
+        );
+
+        // Check current allowance
+        const allowance = await tokenContract.allowance(
+          address,
+          spenderAddress
+        );
+
+        if (allowance >= amount) {
+          return { needsApproval: false, approved: true };
+        }
+
+        return { needsApproval: true, approved: false };
+      } catch (error) {
+        console.error("Token allowance check failed:", error);
+        throw new Error("Failed to check token allowance");
+      }
+    },
+    [celoLend, isConnected, address]
+  );
+
+  // Approve token
+  const approveToken = useCallback(
+    async (tokenAddress: string, spenderAddress: string) => {
+      if (!isConnected || !address) {
+        throw new Error("Wallet not connected");
+      }
+
+      // Skip approval for native token (CELO)
+      if (tokenAddress === ethers.ZeroAddress) {
+        return true;
+      }
+
+      try {
+        // Get token contract
+        const tokenContract = new ethers.Contract(
+          tokenAddress,
+          ["function approve(address,uint256) returns (bool)"],
+          celoLend?.runner
+        );
+
+        // Approve max amount for convenience
+        const maxApproval = ethers.parseUnits("1000000", 18); // 1M tokens
+        const approveTx = await tokenContract.approve(
+          spenderAddress,
+          maxApproval
+        );
+        await approveTx.wait();
+
+        return true;
+      } catch (error) {
+        console.error("Token approval failed:", error);
+        throw new Error("Failed to approve token");
+      }
+    },
+    [celoLend, isConnected, address]
+  );
+
+  // Cancel a loan request
+  const cancelLoanRequest = useCallback(
+    async (loanId: string) => {
+      if (!celoLend || !isConnected || !address) {
+        throw new Error("Wallet not connected");
+      }
+
+      try {
+        const tx = await celoLend.cancelLoanRequest(loanId);
+        await tx.wait();
+
+        // Refresh loan requests after cancellation
+        await fetchLoanRequests();
+
+        return tx;
+      } catch (error) {
+        console.error("Error cancelling loan request:", error);
+        throw error;
+      }
+    },
+    [celoLend, isConnected, address, fetchLoanRequests]
+  );
+
   // Create a new loan request with interest rate calculation
   const createLoanRequest = useCallback(
     async (
       amount: bigint,
+      loanTokenAddress: string,
       duration: bigint,
       collateralAmount: bigint,
-      collateralType: string,
+      collateralTokenAddress: string,
       purpose: string
     ) => {
       if (!celoLend || !isConnected || !address) {
@@ -152,30 +280,47 @@ export function useMarketplaceData() {
         if (!creditScoreContract) {
           throw new Error("Credit score contract not available");
         }
-        const userStats = await creditScoreContract.getUserProfile(address);
+        const userStats = await creditScoreContract.getUserStats(address);
         const creditScore = Number(userStats.creditScore);
+
+        // Get token symbols for collateral type
+        let collateralSymbol = "UNKNOWN";
+        if (collateralTokenAddress === ethers.ZeroAddress) {
+          collateralSymbol = "CELO";
+        } else {
+          try {
+            const tokenContract = new ethers.Contract(
+              collateralTokenAddress,
+              ["function symbol() view returns (string)"],
+              celoLend.runner
+            );
+            collateralSymbol = await tokenContract.symbol();
+          } catch {
+            collateralSymbol = "UNKNOWN";
+          }
+        }
 
         const loanParams: LoanParameters = {
           creditScore,
-          loanAmount: Number(ethers.formatEther(amount)),
-          loanTerm: Number(duration) / (24 * 3600), // Convert seconds to months
+          loanAmount: Number(ethers.formatEther(amount)), // Assuming 18 decimals for now
+          loanTerm: Number(duration) / (24 * 3600), // Convert seconds to days
           collateralRatio:
             Number(ethers.formatEther(collateralAmount)) /
             Number(ethers.formatEther(amount)),
-          collateralType,
+          collateralType: collateralSymbol,
         };
 
         const rateResult = await calculateInterestRate(loanParams);
         const interestRateBps = BigInt(rateResult.rateInBasisPoints);
 
-        // Create loan request
+        // Create loan request - parameters: amount, tokenAddress, interestRate, duration, collateralAmount, collateralToken
         const tx = await celoLend.createLoanRequest(
           amount,
+          loanTokenAddress,
           interestRateBps,
           duration,
           collateralAmount,
-          collateralType,
-          purpose
+          collateralTokenAddress
         );
 
         await tx.wait();
@@ -197,16 +342,42 @@ export function useMarketplaceData() {
     if (!celoLend) return;
 
     try {
-      const stats = await celoLend.getMarketplaceStats();
+      // Since getMarketplaceStats doesn't exist, let's create basic stats
+      const supportedTokens = await celoLend.getSupportedTokens();
+      const activeLoanRequests = await celoLend.getActiveLoanRequests();
+
+      // Calculate basic stats from available data
+      const totalActiveRequests = BigInt(activeLoanRequests.length);
+      let totalFundedAmount = BigInt(0);
+      let averageInterestRate = 0;
+
+      // Calculate totals from loan requests
+      if (activeLoanRequests.length > 0) {
+        let totalInterest = 0;
+        for (const request of activeLoanRequests) {
+          if (request.isFunded) {
+            totalFundedAmount += request.amount;
+          }
+          totalInterest += Number(request.interestRate);
+        }
+        averageInterestRate = totalInterest / activeLoanRequests.length / 100; // Convert from basis points
+      }
 
       setMarketStats({
-        totalActiveRequests: stats.totalActiveRequests,
-        totalFundedAmount: stats.totalFundedAmount,
-        averageInterestRate: Number(stats.averageInterestRate) / 100, // Convert from basis points
-        totalRequests: Number(stats.totalRequests),
+        totalActiveRequests,
+        totalFundedAmount,
+        averageInterestRate,
+        totalRequests: activeLoanRequests.length,
       });
     } catch (error) {
       console.error("Error fetching market stats:", error);
+      // Set default stats on error
+      setMarketStats({
+        totalActiveRequests: BigInt(0),
+        totalFundedAmount: BigInt(0),
+        averageInterestRate: 0,
+        totalRequests: 0,
+      });
     }
   }, [celoLend]);
 
@@ -231,6 +402,9 @@ export function useMarketplaceData() {
     rateLoading,
     fundLoan,
     createLoanRequest,
+    cancelLoanRequest,
+    checkTokenAllowance,
+    approveToken,
     refreshData,
   };
 }

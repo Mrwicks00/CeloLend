@@ -127,25 +127,22 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
 
     // Override to handle successful Self Protocol verification
     function customVerificationHook(
-        ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
-        bytes memory userData
-    ) internal virtual override {
-        address userWallet = msg.sender;
-        bytes32 userIdentifier = bytes32(output.userIdentifier);
+    ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
+    bytes memory /* userData */
+) internal override {
+    address userWallet = address(uint160(output.userIdentifier)); // <-- from proof
+    bytes32 userIdentifier = bytes32(output.userIdentifier);
 
-        // Check if this user identifier is already mapped to another wallet
-        // This prevents the same passport from being used multiple times
-        require(
-            identifierToWallet[userIdentifier] == address(0),
-            "User identifier already mapped to another wallet"
-        );
+    require(identifierToWallet[userIdentifier] == address(0), "Identifier already used");
 
-        // Store the mapping between wallet and Self identifier
-        userIdentifiers[userWallet] = userIdentifier;
-        identifierToWallet[userIdentifier] = userWallet;
+    userIdentifiers[userWallet] = userIdentifier;
 
-        // Initialize credit score for new verified users (only if not already initialized)
-        try creditScore.initializeUser(userWallet) {
+    identifierToWallet[userIdentifier] = userWallet;    
+
+    // Optional: nationality might be absent depending on your config
+    string memory nationality = output.nationality;
+
+    try creditScore.initializeUser(userWallet) {
             // Successfully initialized
         } catch Error(string memory reason) {
             if (
@@ -157,7 +154,7 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
             // User already initialized, that's fine
         }
 
-        emit UserVerified(userWallet, userIdentifier, output.nationality);
+        emit UserVerified(userWallet, userIdentifier, nationality);
     }
 
     modifier onlyVerifiedUser() {

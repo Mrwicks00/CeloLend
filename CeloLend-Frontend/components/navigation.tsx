@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Wallet, ChevronDown, LogOut } from "lucide-react";
 import { useWallet } from "@/contexts/WalletContext";
+import { useSelfProtocol } from "@/contexts/SelfProtocolContext";
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,6 +21,8 @@ export function Navigation() {
     logout,
     switchToAlfajores,
   } = useWallet();
+
+  const { isVerified } = useSelfProtocol();
 
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -145,12 +148,14 @@ export function Navigation() {
             >
               Help
             </Link>
-            <Link
-              href="/onboarding"
-              className="text-gray-600 hover:text-[#B03060] transition-colors"
-            >
-              Get Started
-            </Link>
+            {!isVerified && (
+              <Link
+                href="/onboarding"
+                className="text-gray-600 hover:text-[#B03060] transition-colors"
+              >
+                Get Started
+              </Link>
+            )}
             <WalletButton />
           </div>
 
@@ -192,13 +197,15 @@ export function Navigation() {
               >
                 Help
               </Link>
-              <Link
-                key="onboarding"
-                href="/onboarding"
-                className="text-gray-600 hover:text-[#B03060] transition-colors"
-              >
-                Get Started
-              </Link>
+              {!isVerified && (
+                <Link
+                  key="onboarding"
+                  href="/onboarding"
+                  className="text-gray-600 hover:text-[#B03060] transition-colors"
+                >
+                  Get Started
+                </Link>
+              )}
               <div key="wallet-button">
                 <WalletButton />
               </div>
