@@ -28,6 +28,7 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
     CreditScore public creditScore;
     PriceOracle public priceOracle;
     MentoIntegration public mentoIntegration;
+    address public loanRepaymentContract;
 
     // Platform settings
     uint256 public platformFeeRate = 100; // 1% (basis points) - reduced for competitiveness
@@ -127,22 +128,25 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
 
     // Override to handle successful Self Protocol verification
     function customVerificationHook(
-    ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
-    bytes memory /* userData */
-) internal override {
-    address userWallet = address(uint160(output.userIdentifier)); // <-- from proof
-    bytes32 userIdentifier = bytes32(output.userIdentifier);
+        ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
+        bytes memory /* userData */
+    ) internal override {
+        address userWallet = address(uint160(output.userIdentifier)); // <-- from proof
+        bytes32 userIdentifier = bytes32(output.userIdentifier);
 
-    require(identifierToWallet[userIdentifier] == address(0), "Identifier already used");
+        require(
+            identifierToWallet[userIdentifier] == address(0),
+            "Identifier already used"
+        );
 
-    userIdentifiers[userWallet] = userIdentifier;
+        userIdentifiers[userWallet] = userIdentifier;
 
-    identifierToWallet[userIdentifier] = userWallet;    
+        identifierToWallet[userIdentifier] = userWallet;
 
-    // Optional: nationality might be absent depending on your config
-    string memory nationality = output.nationality;
+        // Optional: nationality might be absent depending on your config
+        string memory nationality = output.nationality;
 
-    try creditScore.initializeUser(userWallet) {
+        try creditScore.initializeUser(userWallet) {
             // Successfully initialized
         } catch Error(string memory reason) {
             if (
@@ -204,6 +208,20 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
     function setScope(uint256 newScope) external onlyOwner {
         _setScope(newScope);
     }
+
+    /**
+     * @notice Set the loan repayment contract address
+     * @param _loanRepaymentContract Address of the LoanRepayment contract
+     */
+    function setLoanRepaymentContract(
+        address _loanRepaymentContract
+    ) external onlyOwner {
+        loanRepaymentContract = _loanRepaymentContract;
+    }
+
+    /**
+     * @notice Set platform contract addresses
+     */
 
     /**
      * @notice Reset verification state for testing purposes
@@ -385,6 +403,18 @@ contract CeloLend is SelfVerificationRoot, Ownable, ReentrancyGuard {
 
         // Remove from active requests
         _removeFromActiveLoanRequests(loanId);
+
+        // Initialize repayment tracking if contract is set
+        if (loanRepaymentContract != address(0)) {
+            (bool success, ) = loanRepaymentContract.call(
+                abi.encodeWithSignature(
+                    "initializeLoanRepayment(uint256,address)",
+                    loanId,
+                    msg.sender
+                )
+            );
+            require(success, "Failed to initialize repayment tracking");
+        }
 
         emit LoanFunded(loanId, msg.sender, address(loanContract));
     }

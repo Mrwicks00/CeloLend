@@ -5,6 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./PriceOracle.sol";
+import "./CeloLend.sol";
 
 contract CollateralVault is Ownable, ReentrancyGuard {
     // Collateral tracking
@@ -27,6 +28,9 @@ contract CollateralVault is Ownable, ReentrancyGuard {
 
     // Price oracle for accurate valuations
     PriceOracle public priceOracle;
+
+    // CeloLend main contract instance
+    CeloLend public celoLend;
 
     // Supported tokens and their liquidation settings
     mapping(address => bool) public supportedCollateralTokens;
@@ -73,6 +77,14 @@ contract CollateralVault is Ownable, ReentrancyGuard {
     }
 
     constructor() Ownable(msg.sender) {}
+
+    /**
+     * @notice Set the CeloLend contract address
+     * @param _celoLend Address of the CeloLend contract
+     */
+    function setCeloLend(address payable _celoLend) external onlyOwner {
+        celoLend = CeloLend(_celoLend);
+    }
 
     function setPriceOracle(address _priceOracle) external onlyOwner {
         require(_priceOracle != address(0), "Invalid oracle address");
@@ -121,6 +133,18 @@ contract CollateralVault is Ownable, ReentrancyGuard {
         uint256 amount,
         uint256 loanId
     ) external onlyAuthorized nonReentrant {
+        _releaseCollateralInternal(user, token, amount, loanId);
+    }
+
+    /**
+     * @notice Internal function to release collateral
+     */
+    function _releaseCollateralInternal(
+        address user,
+        address token,
+        uint256 amount,
+        uint256 loanId
+    ) internal {
         CollateralDeposit storage deposit = loanCollateral[loanId];
         require(deposit.owner == user, "Not collateral owner");
         require(deposit.isLocked, "Collateral not locked");
@@ -152,6 +176,68 @@ contract CollateralVault is Ownable, ReentrancyGuard {
         }
 
         emit CollateralReleased(user, token, amount, loanId);
+    }
+
+    /**
+     * @notice Release collateral after loan repayment (called by LoanRepayment contract)
+     * @param loanId The loan ID for which to release collateral
+     */
+    function releaseCollateralAfterRepayment(uint256 loanId) external {
+        address repaymentContract = celoLend.loanRepaymentContract();
+        require(
+            msg.sender == repaymentContract,
+            "Only LoanRepayment contract can call"
+        );
+
+        // Get loan details to determine collateral to release
+        CeloLend.LoanRequest memory loanRequest = celoLend.getLoanRequest(
+            loanId
+        );
+
+        require(loanRequest.collateralAmount > 0, "No collateral to release");
+
+        // Release the collateral back to borrower
+        _releaseCollateralInternal(
+            loanRequest.borrower,
+            loanRequest.collateralToken,
+            loanRequest.collateralAmount,
+            loanId
+        );
+    }
+
+    /**
+     * @notice Transfer collateral between accounts (used by liquidation engine)
+     * @param from Address to transfer from
+     * @param to Address to transfer to
+     * @param token Token address
+     * @param amount Amount to transfer
+     * @param loanId Associated loan ID
+     */
+    function transferCollateral(
+        address from,
+        address to,
+        address token,
+        uint256 amount,
+        uint256 loanId
+    ) external onlyAuthorized nonReentrant {
+        require(supportedCollateralTokens[token], "Token not supported");
+        require(
+            userTokenBalances[from][token] >= amount,
+            "Insufficient balance"
+        );
+
+        // Update balances
+        userTokenBalances[from][token] -= amount;
+
+        // Transfer to recipient
+        if (token == address(0)) {
+            (bool success, ) = payable(to).call{value: amount}("");
+            require(success, "Native token transfer failed");
+        } else {
+            IERC20(token).transfer(to, amount);
+        }
+
+        emit CollateralReleased(to, token, amount, loanId);
     }
 
     // Liquidate collateral (when loan defaults)
