@@ -2,11 +2,13 @@
 export const CONTRACT_ADDRESSES = {
   // Alfajores Testnet
   alfajores: {
-    CeloLend: "0x9a66C3b09eD66c7b7cf1ad3C04F87CCd022bbCf3",
-    PriceOracle: "0x8d2c60f1A979975CfaD46b1B9624F481bD757c65",
-    MentoIntegration: "0x701552e8EAF283aa08423F70B287Fe483Db353d4",
-    CollateralVault: "0xbE4aB35983BCDE3f58f16b239dB44eF051736007",
-    CreditScore: "0x48d87430e6a18eA9E2Fa7282091Dc5b975cDE11f",
+    CeloLend: "0xd78bC1F155b68CfA5CDda366E60C46a96afCd157",
+    PriceOracle: "0xa026Ec1c594F335894E219993A094c1BAA5625Ee",
+    MentoIntegration: "0x7747C13D20c3A6056Fc2648f5768db070e6174D2",
+    CollateralVault: "0x20Fb97286Bb548b10A9238b50B623Fc20F76948E",
+    CreditScore: "0x790928c746e1D26ee09FC6fb072C412b2256E05D",
+    Treasury: "0x55DAe23e3c48d5c71BbCC3FBD2Ae529dbceDD20F",
+    LoanRepayment: "0x544267D93C5bC3e735ab7659c8f365457E11bab3",
   },
   // Celo Mainnet (placeholder for future deployment)
   celo: {
@@ -15,6 +17,8 @@ export const CONTRACT_ADDRESSES = {
     MentoIntegration: "",
     CollateralVault: "",
     CreditScore: "",
+    Treasury: "",
+    LoanRepayment: "",
   },
 } as const;
 
@@ -22,8 +26,10 @@ export const CONTRACT_ADDRESSES = {
 export const SELF_PROTOCOL_CONFIG = {
   alfajores: {
     hubAddress: "0x68c931C9a534D37aa78094877F46fE46a49F1A51",
-    scopeHash: "5481686980359857257105898219431995075985161095766020325523210795386920118180",
-    configId: "0xc52f992ebee4435b00b65d2c74b12435e96359d1ccf408041528414e6ea687bc",
+    scopeHash:
+      "3136980176717524484005940176752065794906353342553466435733151033902264440377",
+    configId:
+      "0xc52f992ebee4435b00b65d2c74b12435e96359d1ccf408041528414e6ea687bc",
   },
   celo: {
     hubAddress: "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF", // Mainnet Hub

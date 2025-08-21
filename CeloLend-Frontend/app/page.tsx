@@ -13,7 +13,7 @@ import {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <Navigation />
 
       {/* Hero Section with organic background */}
@@ -23,16 +23,16 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Decentralized Lending
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
+              P2P Lending on Celo
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#e54041] to-[#ff4757] animate-gradient">
-                Made Simple
+                With Identity Verification
               </span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Access instant loans with your digital assets as collateral. No
-              credit checks, no paperwork - just fast, secure, and transparent
-              lending powered by blockchain technology.
+            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+              Secure peer-to-peer lending with Self Protocol identity
+              verification. Support for CELO and Mento stablecoins (cUSD, cEUR,
+              cREAL) with dynamic interest rates and smart contract automation.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/onboarding">
@@ -56,12 +56,12 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why Choose DeFi Lend?
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Why Choose CeloLend?
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Experience the future of lending with our innovative platform
-              designed for everyone
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Experience verified P2P lending with multi-token support,
+              real-time pricing, and automated repayment tracking
             </p>
           </div>
 
@@ -71,11 +71,11 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-[#e54041] to-[#ff4757] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Zap className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Instant Loans
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  Identity Verified
                 </h3>
-                <p className="text-gray-600">
-                  Get approved and funded in minutes, not days
+                <p className="text-muted-foreground">
+                  Self Protocol verification ensures trusted lending
                 </p>
               </CardContent>
             </Card>
@@ -85,11 +85,11 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-[#ff4757] to-[#ff6f61] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Secure & Transparent
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  Multi-Token Support
                 </h3>
-                <p className="text-gray-600">
-                  Smart contracts ensure complete transparency
+                <p className="text-muted-foreground">
+                  CELO, cUSD, cEUR, cREAL - powered by Mento Protocol
                 </p>
               </CardContent>
             </Card>
@@ -99,11 +99,11 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-[#ff6f61] to-[#e57373] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Phone className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Mobile Friendly
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  Automated Repayment
                 </h3>
-                <p className="text-gray-600">
-                  Access via smartphone or feature phone
+                <p className="text-muted-foreground">
+                  Smart contract automation with flexible payment options
                 </p>
               </CardContent>
             </Card>
@@ -113,11 +113,11 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-[#e57373] to-[#8b1e3f] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Competitive Rates
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  Dynamic Rates
                 </h3>
-                <p className="text-gray-600">
-                  Market-driven interest rates for best value
+                <p className="text-muted-foreground">
+                  Real-time pricing with collateral-based discounts
                 </p>
               </CardContent>
             </Card>
@@ -131,10 +131,10 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
               How It Works
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Simple steps to get your loan or start lending
             </p>
           </div>
@@ -144,10 +144,10 @@ export default function LandingPage() {
               <div className="w-16 h-16 bg-gradient-to-br from-[#e54041] to-[#ff4757] rounded-full flex items-center justify-center mx-auto mb-4 animate-gentle-bounce">
                 <span className="text-white font-bold text-xl">1</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 Connect & Verify
               </h3>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Connect your wallet or verify via phone number
               </p>
             </div>
@@ -159,10 +159,10 @@ export default function LandingPage() {
               >
                 <span className="text-white font-bold text-xl">2</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 Deposit Collateral
               </h3>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Secure your loan with digital or tokenized assets
               </p>
             </div>
@@ -174,10 +174,10 @@ export default function LandingPage() {
               >
                 <span className="text-white font-bold text-xl">3</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 Get Funded
               </h3>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Receive your loan instantly to your wallet
               </p>
             </div>
@@ -219,7 +219,7 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-br from-[#e54041] to-[#ff4757] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">DL</span>
+                  <span className="text-white font-bold text-sm">CL</span>
                 </div>
                 <span className="font-bold text-xl">CeloLend</span>
               </div>
@@ -313,7 +313,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 DeFi Lend. All rights reserved.</p>
+            <p>&copy; 2025 CeloLend. All rights reserved.</p>
           </div>
         </div>
       </footer>

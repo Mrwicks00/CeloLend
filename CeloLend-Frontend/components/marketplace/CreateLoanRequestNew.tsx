@@ -775,4 +775,3 @@ export function CreateLoanRequest() {
     </div>
   );
 }
-

@@ -232,6 +232,19 @@ export const CELO_LEND_ABI = [
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "newConfigId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "VerificationConfigUpdated",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "BASIS_POINTS",
     "outputs": [
@@ -1216,6 +1229,19 @@ export const CELO_LEND_ABI = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "loanRepaymentContract",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1421,6 +1447,19 @@ export const CELO_LEND_ABI = [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "resetVerificationState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "scope",
     "outputs": [
@@ -1481,6 +1520,19 @@ export const CELO_LEND_ABI = [
     "inputs": [
       {
         "internalType": "address",
+        "name": "_loanRepaymentContract",
+        "type": "address"
+      }
+    ],
+    "name": "setLoanRepaymentContract",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "_mentoIntegration",
         "type": "address"
       }
@@ -1533,7 +1585,7 @@ export const CELO_LEND_ABI = [
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_scope",
+        "name": "newScope",
         "type": "uint256"
       }
     ],
@@ -1556,6 +1608,86 @@ export const CELO_LEND_ABI = [
       }
     ],
     "name": "setSupportedToken",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "olderThanEnabled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "olderThan",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "forbiddenCountriesEnabled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256[4]",
+            "name": "forbiddenCountriesListPacked",
+            "type": "uint256[4]"
+          },
+          {
+            "internalType": "bool[3]",
+            "name": "ofacEnabled",
+            "type": "bool[3]"
+          }
+        ],
+        "internalType": "struct SelfStructs.VerificationConfigV2",
+        "name": "config",
+        "type": "tuple"
+      }
+    ],
+    "name": "setVerificationConfig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "olderThanEnabled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256",
+            "name": "olderThan",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "forbiddenCountriesEnabled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint256[4]",
+            "name": "forbiddenCountriesListPacked",
+            "type": "uint256[4]"
+          },
+          {
+            "internalType": "bool[3]",
+            "name": "ofacEnabled",
+            "type": "bool[3]"
+          }
+        ],
+        "internalType": "struct SelfStructs.VerificationConfigV2",
+        "name": "config",
+        "type": "tuple"
+      }
+    ],
+    "name": "setVerificationConfigNoHub",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1669,6 +1801,29 @@ export const CELO_LEND_ABI = [
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "verificationConfig",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "olderThanEnabled",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "olderThan",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "forbiddenCountriesEnabled",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",

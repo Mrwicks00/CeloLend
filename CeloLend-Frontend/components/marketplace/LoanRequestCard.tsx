@@ -20,6 +20,7 @@ import {
 } from "@/lib/contracts/contractHelpers";
 import { useMarketplaceData } from "@/hooks/useMarketplaceData";
 import { useWallet } from "@/contexts/WalletContext";
+import { useLoanRepayment } from "@/hooks/useLoanRepayment";
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
 
@@ -30,6 +31,7 @@ interface LoanRequestCardProps {
 export function LoanRequestCard({ request }: LoanRequestCardProps) {
   const { fundLoan, cancelLoanRequest } = useMarketplaceData();
   const { address, isConnected } = useWallet();
+  const { getLoanRepaymentInfo } = useLoanRepayment();
   const [fundAmount, setFundAmount] = useState("");
   const [isFunding, setIsFunding] = useState(false);
   const [fundError, setFundError] = useState<string | null>(null);
@@ -144,6 +146,10 @@ export function LoanRequestCard({ request }: LoanRequestCardProps) {
     isOwnRequest &&
     request.status === "open" &&
     request.fundedAmount === BigInt(0);
+
+  // Check if loan is funded and borrower can repay
+  const isFunded = request.fundedAmount > BigInt(0);
+  const canRepay = isOwnRequest && isFunded;
 
   const FundLoanDialog = () => (
     <Dialog>
@@ -353,6 +359,13 @@ export function LoanRequestCard({ request }: LoanRequestCardProps) {
               className="bg-red-500 hover:bg-red-600"
             >
               {isCancelling ? "Cancelling..." : "Cancel Request"}
+            </Button>
+          ) : canRepay ? (
+            <Button
+              className="btn-primary w-full"
+              onClick={() => (window.location.href = "/dashboard")}
+            >
+              Manage Repayment
             </Button>
           ) : (
             <FundLoanDialog />

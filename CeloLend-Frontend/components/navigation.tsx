@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Wallet, ChevronDown, LogOut } from "lucide-react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useSelfProtocol } from "@/contexts/SelfProtocolContext";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -117,7 +118,7 @@ export function Navigation() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -125,37 +126,38 @@ export function Navigation() {
             <div className="w-8 h-8 bg-gradient-to-br from-[#B03060] to-[#C85062] rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">CL</span>
             </div>
-            <span className="font-bold text-xl text-gray-900">CeloLend</span>
+            <span className="font-bold text-xl text-foreground">CeloLend</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link
               href="/marketplace"
-              className="text-gray-600 hover:text-[#B03060] transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors"
             >
               Marketplace
             </Link>
             <Link
               href="/dashboard"
-              className="text-gray-600 hover:text-[#B03060] transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors"
             >
               Dashboard
             </Link>
             <Link
               href="/help"
-              className="text-gray-600 hover:text-[#B03060] transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors"
             >
               Help
             </Link>
             {!isVerified && (
               <Link
                 href="/onboarding"
-                className="text-gray-600 hover:text-[#B03060] transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
               >
                 Get Started
               </Link>
             )}
+            <ThemeToggle />
             <WalletButton />
           </div>
 
@@ -179,21 +181,21 @@ export function Navigation() {
               <Link
                 key="marketplace"
                 href="/marketplace"
-                className="text-gray-600 hover:text-[#B03060] transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
               >
                 Marketplace
               </Link>
               <Link
                 key="dashboard"
                 href="/dashboard"
-                className="text-gray-600 hover:text-[#B03060] transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
               >
                 Dashboard
               </Link>
               <Link
                 key="help"
                 href="/help"
-                className="text-gray-600 hover:text-[#B03060] transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
               >
                 Help
               </Link>
@@ -201,7 +203,7 @@ export function Navigation() {
                 <Link
                   key="onboarding"
                   href="/onboarding"
-                  className="text-gray-600 hover:text-[#B03060] transition-colors"
+                  className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Get Started
                 </Link>

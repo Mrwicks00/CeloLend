@@ -43,34 +43,36 @@ export function SelfProtocolProvider({ children }: SelfProtocolProviderProps) {
     isVerifying: false,
   });
 
-
   const checkVerificationStatus = useCallback(async () => {
     if (!address || !celoLend) {
       return;
     }
-  
+
     try {
       console.log("Checking verification for address:", address);
-      
+
       const isVerified = await celoLend.isUserVerified(address);
       const userIdentifier = await celoLend.getUserIdentifier(address);
-  
+
       console.log("Contract response:", { isVerified, userIdentifier });
-  
-      const hasValidIdentifier = userIdentifier && 
-        userIdentifier !== "0x0000000000000000000000000000000000000000000000000000000000000000";
-  
+
+      const hasValidIdentifier =
+        userIdentifier &&
+        userIdentifier !==
+          "0x0000000000000000000000000000000000000000000000000000000000000000";
+
       setState((prev) => ({
         ...prev,
         isVerified: isVerified && hasValidIdentifier,
         userIdentifier: hasValidIdentifier ? userIdentifier : null,
-        verificationStatus: (isVerified && hasValidIdentifier) ? "verified" : "unverified",
+        verificationStatus:
+          isVerified && hasValidIdentifier ? "verified" : "unverified",
         isVerifying: false,
       }));
     } catch (error) {
       console.error("Error checking verification status:", error);
-      setState((prev) => ({ 
-        ...prev, 
+      setState((prev) => ({
+        ...prev,
         isVerifying: false,
         verificationStatus: "unverified",
       }));
@@ -160,14 +162,19 @@ export function SelfProtocolProvider({ children }: SelfProtocolProviderProps) {
   // Handle verification success from Self Protocol
   // Replace your handleVerificationSuccess with this simple approach
   const handleVerificationSuccess = useCallback(() => {
-    setState(prev => ({ ...prev, verificationStatus: "verified", isVerified: true, isVerifying: false }));
-  
+    setState((prev) => ({
+      ...prev,
+      verificationStatus: "verified",
+      isVerified: true,
+      isVerifying: false,
+    }));
+
     let attempts = 0;
     const maxAttempts = 15; // ~30s at 2s interval
     const interval = setInterval(async () => {
       attempts++;
       await checkVerificationStatus();
-      setState(prev => {
+      setState((prev) => {
         if (prev.isVerified) {
           clearInterval(interval);
         }
@@ -176,41 +183,40 @@ export function SelfProtocolProvider({ children }: SelfProtocolProviderProps) {
       if (attempts >= maxAttempts) clearInterval(interval);
     }, 2000);
   }, [checkVerificationStatus]);
-  
 
-// Simplify checkVerificationStatus
-// const checkVerificationStatus = useCallback(async () => {
-//   if (!address || !celoLend) {
-//     return;
-//   }
+  // Simplify checkVerificationStatus
+  // const checkVerificationStatus = useCallback(async () => {
+  //   if (!address || !celoLend) {
+  //     return;
+  //   }
 
-//   try {
-//     console.log("Checking verification for address:", address);
-    
-//     const isVerified = await celoLend.isUserVerified(address);
-//     const userIdentifier = await celoLend.getUserIdentifier(address);
+  //   try {
+  //     console.log("Checking verification for address:", address);
 
-//     console.log("Contract response:", { isVerified, userIdentifier });
+  //     const isVerified = await celoLend.isUserVerified(address);
+  //     const userIdentifier = await celoLend.getUserIdentifier(address);
 
-//     const hasValidIdentifier = userIdentifier && 
-//       userIdentifier !== "0x0000000000000000000000000000000000000000000000000000000000000000";
+  //     console.log("Contract response:", { isVerified, userIdentifier });
 
-//     setState((prev) => ({
-//       ...prev,
-//       isVerified: isVerified && hasValidIdentifier,
-//       userIdentifier: hasValidIdentifier ? userIdentifier : null,
-//       verificationStatus: (isVerified && hasValidIdentifier) ? "verified" : "unverified",
-//       isVerifying: false,
-//     }));
-//   } catch (error) {
-//     console.error("Error checking verification status:", error);
-//     setState((prev) => ({ 
-//       ...prev, 
-//       isVerifying: false,
-//       verificationStatus: "unverified",
-//     }));
-//   }
-// }, [address, celoLend]);
+  //     const hasValidIdentifier = userIdentifier &&
+  //       userIdentifier !== "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+  //     setState((prev) => ({
+  //       ...prev,
+  //       isVerified: isVerified && hasValidIdentifier,
+  //       userIdentifier: hasValidIdentifier ? userIdentifier : null,
+  //       verificationStatus: (isVerified && hasValidIdentifier) ? "verified" : "unverified",
+  //       isVerifying: false,
+  //     }));
+  //   } catch (error) {
+  //     console.error("Error checking verification status:", error);
+  //     setState((prev) => ({
+  //       ...prev,
+  //       isVerifying: false,
+  //       verificationStatus: "unverified",
+  //     }));
+  //   }
+  // }, [address, celoLend]);
 
   // Check verification status when address or contract changes
   useEffect(() => {

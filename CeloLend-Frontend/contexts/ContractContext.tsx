@@ -17,6 +17,8 @@ import {
   CREDIT_SCORE_ABI,
   MENTO_INTEGRATION_ABI,
   LOAN_AGREEMENT_ABI,
+  TREASURY_ABI,
+  LOAN_REPAYMENT_ABI,
 } from "@/lib/contracts/abi";
 
 interface ContractState {
@@ -26,6 +28,8 @@ interface ContractState {
   creditScore: ethers.Contract | null;
   mentoIntegration: ethers.Contract | null;
   loanAgreement: ethers.Contract | null;
+  treasury: ethers.Contract | null;
+  loanRepayment: ethers.Contract | null;
   isConnected: boolean;
   isLoading: boolean;
   error: string | null;
@@ -55,6 +59,8 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
     creditScore: ethers.Contract | null;
     mentoIntegration: ethers.Contract | null;
     loanAgreement: ethers.Contract | null;
+    treasury: ethers.Contract | null;
+    loanRepayment: ethers.Contract | null;
   }>({
     celoLend: null,
     priceOracle: null,
@@ -62,6 +68,8 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
     creditScore: null,
     mentoIntegration: null,
     loanAgreement: null,
+    treasury: null,
+    loanRepayment: null,
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -90,13 +98,21 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
 
       // Get signer from the window.ethereum provider for transactions
       let contractRunner: ethers.ContractRunner = provider;
-      if (typeof window !== 'undefined' && window.ethereum && 
-          typeof window.ethereum.request === 'function') {
+      if (
+        typeof window !== "undefined" &&
+        window.ethereum &&
+        typeof window.ethereum.request === "function"
+      ) {
         try {
-          const browserProvider = new ethers.BrowserProvider(window.ethereum as unknown as ethers.Eip1193Provider);
+          const browserProvider = new ethers.BrowserProvider(
+            window.ethereum as unknown as ethers.Eip1193Provider
+          );
           contractRunner = await browserProvider.getSigner();
         } catch (signerError) {
-          console.warn("Could not get signer, using read-only provider:", signerError);
+          console.warn(
+            "Could not get signer, using read-only provider:",
+            signerError
+          );
         }
       }
 
@@ -138,6 +154,18 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
         contractRunner
       );
 
+      const treasury = new ethers.Contract(
+        addresses.Treasury,
+        TREASURY_ABI,
+        contractRunner
+      );
+
+      const loanRepayment = new ethers.Contract(
+        addresses.LoanRepayment,
+        LOAN_REPAYMENT_ABI,
+        contractRunner
+      );
+
       setContracts({
         celoLend,
         priceOracle,
@@ -145,6 +173,8 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
         creditScore,
         mentoIntegration,
         loanAgreement,
+        treasury,
+        loanRepayment,
       });
     } catch (err) {
       console.error("Failed to connect contracts:", err);
@@ -164,6 +194,8 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
         CollateralVault: contracts.collateralVault,
         CreditScore: contracts.creditScore,
         MentoIntegration: contracts.mentoIntegration,
+        Treasury: contracts.treasury,
+        LoanRepayment: contracts.loanRepayment,
       };
       return contractMap[contractName] || null;
     },
@@ -187,6 +219,8 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
         creditScore: null,
         mentoIntegration: null,
         loanAgreement: null,
+        treasury: null,
+        loanRepayment: null,
       });
     }
   }, [isAuthenticated, address, connectContracts]);

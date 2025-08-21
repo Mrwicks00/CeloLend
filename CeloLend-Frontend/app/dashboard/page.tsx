@@ -5,6 +5,7 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { LoanPositions } from "@/components/dashboard/LoanPositions";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { RepaymentSection } from "@/components/dashboard/RepaymentSection";
 import { TokenBalanceGrid } from "@/components/ui/token-balance-card";
 import { useWallet } from "@/contexts/WalletContext";
 import { useSelfProtocol } from "@/contexts/SelfProtocolContext";
@@ -44,6 +45,13 @@ export default function DashboardPage() {
 
           {/* Loan Positions */}
           <LoanPositions />
+
+          {/* Loan Repayments */}
+          {isAuthenticated && isVerified && (
+            <div className="mb-8">
+              <RepaymentSection />
+            </div>
+          )}
 
           {/* Recent Activity */}
           <RecentActivity />

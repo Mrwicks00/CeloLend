@@ -95,7 +95,7 @@ export default function OnboardingPage() {
                 <Shield className="w-8 h-8 text-white" />
               </div>
               <CardTitle className="text-2xl">Welcome to DeFi Lend</CardTitle>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Let's get you set up with secure access to decentralized lending
               </p>
             </CardHeader>
@@ -132,7 +132,7 @@ export default function OnboardingPage() {
               <CardTitle className="text-2xl">
                 Choose Verification Method
               </CardTitle>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 How would you like to verify your identity?
               </p>
             </CardHeader>
@@ -151,7 +151,7 @@ export default function OnboardingPage() {
                   </div>
                   <div className="text-left">
                     <div className="font-semibold">Phone Number</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       Verify via SMS or USSD
                     </div>
                   </div>
@@ -172,7 +172,7 @@ export default function OnboardingPage() {
                   </div>
                   <div className="text-left">
                     <div className="font-semibold">Crypto Wallet</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       Connect your existing wallet
                     </div>
                   </div>
@@ -199,7 +199,7 @@ export default function OnboardingPage() {
                 <Phone className="w-8 h-8 text-white" />
               </div>
               <CardTitle className="text-2xl">Phone Verification</CardTitle>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {!isCodeSent
                   ? "Enter your phone number to receive a verification code"
                   : "Enter the 6-digit code sent to your phone"}
@@ -275,7 +275,7 @@ export default function OnboardingPage() {
                 <Wallet className="w-8 h-8 text-white" />
               </div>
               <CardTitle className="text-2xl">Connect Wallet</CardTitle>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Connect your wallet to continue with identity verification
               </p>
             </CardHeader>
@@ -298,10 +298,10 @@ export default function OnboardingPage() {
                         <Wallet className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900">
+                        <p className="font-semibold text-foreground">
                           Privy Wallet
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           Email, social login, or existing wallet
                         </p>
                       </div>
@@ -366,10 +366,10 @@ export default function OnboardingPage() {
               <div className="w-16 h-16 bg-gradient-to-br from-[#FF6F61] to-[#E57373] rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 Self Protocol Identity Verification
               </h2>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Complete your identity verification for enhanced security
               </p>
             </div>
@@ -480,7 +480,7 @@ export default function OnboardingPage() {
                 <Wallet className="w-8 h-8 text-white" />
               </div>
               <CardTitle className="text-2xl">Proxy Wallet Setup</CardTitle>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 We'll create a secure proxy wallet for your transactions
               </p>
             </CardHeader>
@@ -535,8 +535,8 @@ export default function OnboardingPage() {
               <div className="w-16 h-16 bg-gradient-to-br from-[#B03060] to-[#C85062] rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-white" />
               </div>
-              <CardTitle className="text-2xl">Welcome to DeFi Lend!</CardTitle>
-              <p className="text-gray-600">
+              <CardTitle className="text-2xl">Welcome to CeloLend!</CardTitle>
+              <p className="text-muted-foreground">
                 Your account is now set up and ready to use
               </p>
             </CardHeader>
@@ -577,7 +577,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F8F8]">
+    <div className="min-h-screen bg-background">
       <Navigation />
 
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
@@ -608,7 +608,7 @@ export default function OnboardingPage() {
                           ? "bg-[#B03060] text-white"
                           : isCompleted
                           ? "bg-green-500 text-white"
-                          : "bg-gray-200 text-gray-900"
+                          : "bg-gray-200 text-foreground"
                       }`}
                     >
                       {isCompleted ? "✓" : stepNumber}

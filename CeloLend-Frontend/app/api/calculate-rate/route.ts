@@ -11,15 +11,15 @@ interface RateRequest {
 
 class InterestRateCalculator {
   // Platform parameters (tune these for your strategy)
-  private baseRate = 8.0; // 8% base annual rate
-  private alpha = 15.0; // Credit score impact coefficient
-  private beta = 2.0; // Loan term coefficient
-  private gamma = 5.0; // Market conditions coefficient
-  private delta = 3.0; // Collateral ratio coefficient
+  private baseRate = 6.5; // 6.5% base annual rate (more competitive)
+  private alpha = 10.0; // Credit score impact coefficient (reduced)
+  private beta = 1.5; // Loan term coefficient (reduced)
+  private gamma = 2.0; // Market conditions coefficient (reduced)
+  private delta = 4.0; // Collateral ratio coefficient (increased reward)
 
   // Market state (in production, fetch from external sources)
-  private utilizationRate = 0.65; // 65% platform utilization
-  private marketVolatility = 0.1; // 10% volatility factor
+  private utilizationRate = 0.4; // 40% platform utilization (more conservative)
+  private marketVolatility = 0.02; // 2% volatility factor (smaller jitter)
 
   calculateInterestRate(data: RateRequest): number {
     const {
@@ -51,7 +51,7 @@ class InterestRateCalculator {
     // 6. Loan size adjustment - larger loans may get better rates
     const sizeAdjustment = this._getLoanSizeAdjustment(loanAmount);
 
-    // Calculate final rate
+    // Calculate preliminary rate
     let finalRate =
       this.baseRate +
       creditRiskRate +
@@ -60,8 +60,17 @@ class InterestRateCalculator {
       collateralDiscount +
       sizeAdjustment;
 
-    // Apply volatility factor
+    // Apply volatility factor (small jitter)
     finalRate += (Math.random() - 0.5) * this.marketVolatility;
+
+    // Soft caps for strong profiles (keep borrowing competitive)
+    const isStable = ["cUSD", "cEUR", "cREAL", "USDC"].includes(collateralType);
+    if (isStable && creditScore >= 75 && collateralRatio >= 1.5) {
+      finalRate = Math.min(finalRate, 12.0);
+    }
+    if (creditScore >= 90 && collateralRatio >= 2.0) {
+      finalRate = Math.min(finalRate, 9.0);
+    }
 
     // Ensure reasonable bounds (2% minimum, 50% maximum)
     finalRate = Math.max(2.0, Math.min(50.0, finalRate));
@@ -86,19 +95,20 @@ class InterestRateCalculator {
 
     const riskFactor = collateralRiskFactors[collateralType] || 1.0;
 
-    // Enhanced collateral discount - more aggressive reduction for higher ratios
+    // Enhanced collateral discount - more generous for higher ratios
     let baseDiscount = 0;
-    
-    if (ratio >= 1.5) { // 150% minimum
+
+    if (ratio >= 1.5) {
+      // 150% minimum
       // Base discount for meeting minimum
-      baseDiscount = this.delta * 0.5; // 1.5% base discount
-      
+      baseDiscount = this.delta * 0.5; // with delta=4 -> 2.0% base discount
+
       // Additional discount for higher collateral
       const excessRatio = ratio - 1.5;
-      
+
       if (excessRatio > 0) {
-        // Up to 3% additional discount for very high collateral
-        const additionalDiscount = Math.min(3.0, excessRatio * 6); // 6% discount per 1 ratio point above 1.5
+        // Up to 2% additional discount for very high collateral, gentler slope
+        const additionalDiscount = Math.min(2.0, excessRatio * 4); // 4% per 1 ratio point above 1.5
         baseDiscount += additionalDiscount;
       }
     }
@@ -107,11 +117,11 @@ class InterestRateCalculator {
   }
 
   private _getLoanSizeAdjustment(amount: number): number {
-    // Larger loans get slightly better rates (economies of scale)
-    if (amount >= 10000) return -0.5; // -0.5% for loans >= 10K
-    if (amount >= 5000) return -0.25; // -0.25% for loans >= 5K
+    // Larger loans get better rates (economies of scale)
+    if (amount >= 10000) return -0.75; // -0.75% for loans >= 10K
+    if (amount >= 5000) return -0.5; // -0.5% for loans >= 5K
     if (amount >= 1000) return 0; // No adjustment for medium loans
-    return 0.5; // +0.5% for small loans < 1K
+    return 0.25; // +0.25% for small loans < 1K
   }
 
   // Get rate breakdown for transparency

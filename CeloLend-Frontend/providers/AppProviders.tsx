@@ -5,7 +5,7 @@ import { PrivyProviderWrapper } from "./PrivyProviderWrapper";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { SelfProtocolProvider } from "@/contexts/SelfProtocolContext";
 import { ContractProvider } from "@/contexts/ContractContext";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -13,12 +13,7 @@ interface AppProvidersProps {
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem={false}
-      disableTransitionOnChange
-    >
+    <ThemeProvider>
       <PrivyProviderWrapper>
         <WalletProvider>
           <ContractProvider>

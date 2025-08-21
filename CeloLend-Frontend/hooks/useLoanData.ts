@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { ethers } from "ethers";
 import { useContract } from "@/contexts/ContractContext";
 import { useWallet } from "@/contexts/WalletContext";
+import { useLoanRepayment } from "./useLoanRepayment";
 
 interface LoanRequest {
   id: number;

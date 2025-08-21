@@ -33,7 +33,8 @@ import { useSelfProtocol } from "@/contexts/SelfProtocolContext";
 import { useSupportedTokens } from "@/hooks/useSupportedTokens";
 import { useLoanLimits } from "@/hooks/useLoanLimits";
 import { formatTokenAmount } from "@/lib/contracts/contractHelpers";
-import { calculateInterestRate } from "@/lib/interestRateUtils";
+import { calculateInterestRate, type RateResponse } from "@/lib/interestRateUtils";
+import { getContractAddress } from "@/lib/contracts/addresses";
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
 
@@ -71,6 +72,7 @@ export function CreateLoanRequest() {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [calculatedRate, setCalculatedRate] = useState<number | null>(null);
+  const [rateBreakdown, setRateBreakdown] = useState<RateResponse["breakdown"] | null>(null);
   const [approvalStatus, setApprovalStatus] = useState<{
     needsApproval: boolean;
     isApproving: boolean;
@@ -243,6 +245,7 @@ export function CreateLoanRequest() {
 
       const rateResult = await calculateInterestRate(loanParams);
       setCalculatedRate(rateResult.interestRate);
+      setRateBreakdown(rateResult.breakdown);
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "Failed to calculate rate"
@@ -280,7 +283,7 @@ export function CreateLoanRequest() {
       const result = await checkTokenAllowance(
         formData.collateralToken,
         collateralAmount,
-        "0x9a66C3b09eD66c7b7cf1ad3C04F87CCd022bbCf3" // CeloLend contract address
+        getContractAddress("CeloLend") // CeloLend contract address
       );
 
       setApprovalStatus({
@@ -323,7 +326,7 @@ export function CreateLoanRequest() {
 
       await approveToken(
         formData.collateralToken,
-        "0x9a66C3b09eD66c7b7cf1ad3C04F87CCd022bbCf3"
+        getContractAddress("CeloLend")
       );
 
       setApprovalStatus({
@@ -868,6 +871,35 @@ export function CreateLoanRequest() {
                     <span className="text-lg font-bold text-green-600">
                       {calculatedRate.toFixed(2)}%
                     </span>
+                  </div>
+                )}
+
+                {rateBreakdown && (
+                  <div className="p-3 rounded-lg border bg-white/70 space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Base Rate</span>
+                      <span className="font-medium">{rateBreakdown.baseRate.toFixed(2)}%</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Credit Risk</span>
+                      <span className="font-medium">+{rateBreakdown.creditRisk.toFixed(2)}%</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Term Risk</span>
+                      <span className="font-medium">+{rateBreakdown.termRisk.toFixed(2)}%</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Market Conditions</span>
+                      <span className="font-medium">+{rateBreakdown.marketConditions.toFixed(2)}%</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Collateral Discount</span>
+                      <span className="font-medium text-green-600">{rateBreakdown.collateralDiscount.toFixed(2)}%</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Size Adjustment</span>
+                      <span className="font-medium">{rateBreakdown.sizeAdjustment >= 0 ? "+" : ""}{rateBreakdown.sizeAdjustment.toFixed(2)}%</span>
+                    </div>
                   </div>
                 )}
 

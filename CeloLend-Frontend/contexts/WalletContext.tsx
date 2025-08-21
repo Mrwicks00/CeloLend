@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { formatEther } from "viem";
 import type { WalletContextType, WalletState } from "@/types/wallet";
@@ -15,10 +21,10 @@ interface WalletProviderProps {
 export function WalletProvider({ children }: WalletProviderProps) {
   const { user, authenticated, login, logout, ready } = usePrivy();
   const { wallets } = useWallets();
-  
+
   // Get the first connected wallet (embedded or external)
   const wallet = wallets[0];
-  
+
   // Wallet state
   const [state, setState] = useState<WalletState>({
     user: null,
@@ -46,9 +52,9 @@ export function WalletProvider({ children }: WalletProviderProps) {
         method: "eth_getBalance",
         params: [wallet.address, "latest"],
       });
-      
+
       const formattedBalance = formatEther(BigInt(balance));
-      setState(prev => ({ ...prev, balance: formattedBalance }));
+      setState((prev) => ({ ...prev, balance: formattedBalance }));
     } catch (error) {
       console.error("Error fetching balance:", error);
     }
@@ -61,7 +67,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     try {
       const provider = await wallet.getEthereumProvider();
       const alfajoresConfig = SUPPORTED_NETWORKS.alfajores;
-      
+
       await provider.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: `0x${alfajoresConfig.chainId.toString(16)}` }],
@@ -72,7 +78,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         try {
           const provider = await wallet.getEthereumProvider();
           const alfajoresConfig = SUPPORTED_NETWORKS.alfajores;
-          
+
           await provider.request({
             method: "wallet_addEthereumChain",
             params: [
@@ -103,7 +109,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     try {
       const provider = await wallet.getEthereumProvider();
       const celoConfig = SUPPORTED_NETWORKS.celo;
-      
+
       await provider.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: `0x${celoConfig.chainId.toString(16)}` }],
@@ -114,7 +120,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         try {
           const provider = await wallet.getEthereumProvider();
           const celoConfig = SUPPORTED_NETWORKS.celo;
-          
+
           await provider.request({
             method: "wallet_addEthereumChain",
             params: [
@@ -139,30 +145,33 @@ export function WalletProvider({ children }: WalletProviderProps) {
   }, [wallet]);
 
   // Send transaction
-  const sendTransaction = useCallback(async (to: string, value: string, data?: string) => {
-    if (!wallet) throw new Error("No wallet connected");
+  const sendTransaction = useCallback(
+    async (to: string, value: string, data?: string) => {
+      if (!wallet) throw new Error("No wallet connected");
 
-    const provider = await wallet.getEthereumProvider();
-    const txHash = await provider.request({
-      method: "eth_sendTransaction",
-      params: [
-        {
-          from: wallet.address,
-          to,
-          value: `0x${BigInt(value).toString(16)}`,
-          data: data || "0x",
-        },
-      ],
-    });
+      const provider = await wallet.getEthereumProvider();
+      const txHash = await provider.request({
+        method: "eth_sendTransaction",
+        params: [
+          {
+            from: wallet.address,
+            to,
+            value: `0x${BigInt(value).toString(16)}`,
+            data: data || "0x",
+          },
+        ],
+      });
 
-    return txHash;
-  }, [wallet]);
+      return txHash;
+    },
+    [wallet]
+  );
 
   // Update state when wallet changes
   useEffect(() => {
     if (!ready) return;
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       user,
       isAuthenticated: authenticated,
@@ -178,8 +187,8 @@ export function WalletProvider({ children }: WalletProviderProps) {
           const provider = await wallet.getEthereumProvider();
           const chainId = await provider.request({ method: "eth_chainId" });
           const numericChainId = parseInt(chainId, 16);
-          
-          setState(prev => ({
+
+          setState((prev) => ({
             ...prev,
             chainId: numericChainId,
             isWrongNetwork: !isCorrectNetwork(numericChainId),
@@ -200,7 +209,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
     const handleChainChanged = (chainId: string) => {
       const numericChainId = parseInt(chainId, 16);
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         chainId: numericChainId,
         isWrongNetwork: !isCorrectNetwork(numericChainId),
@@ -211,7 +220,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     const handleAccountsChanged = (accounts: string[]) => {
       if (accounts.length === 0) {
         // Wallet disconnected
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           isConnected: false,
           address: null,
@@ -219,7 +228,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
         }));
       } else {
         // Account changed
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           address: accounts[0],
         }));
@@ -236,7 +245,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     setupListeners();
 
     return () => {
-      wallet.getEthereumProvider().then(provider => {
+      wallet.getEthereumProvider().then((provider) => {
         provider.removeListener("chainChanged", handleChainChanged);
         provider.removeListener("accountsChanged", handleAccountsChanged);
       });
