@@ -7,6 +7,7 @@ import { Menu, X, Wallet, ChevronDown, LogOut } from "lucide-react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useSelfProtocol } from "@/contexts/SelfProtocolContext";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import Image from "next/image";
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -122,9 +123,16 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#B03060] to-[#C85062] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">CL</span>
+          <Link href="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg">
+              <Image
+                src="/CeloLend.png"
+                alt="CeloLend"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain p-1"
+                priority
+              />
             </div>
             <span className="font-bold text-xl text-foreground">CeloLend</span>
           </Link>

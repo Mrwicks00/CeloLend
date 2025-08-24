@@ -35,6 +35,18 @@ export type CollateralPosition = {
   loanAmount: number;
   liquidationPrice: number;
   status: "healthy" | "warning" | "danger";
+  // Additional properties needed by the UI
+  loanId: string;
+  loanToken: string;
+  collateralTokens: Array<{
+    token: string;
+    amount: number;
+    symbol: string;
+  }>;
+  totalCollateralValue: number;
+  canCancel: boolean;
+  canAddCollateral: boolean;
+  canWithdrawExcess: boolean;
 };
 
 export function useCollateralData() {
@@ -81,7 +93,7 @@ export function useCollateralData() {
 
       for (let i = 0; i < tokensArr.length; i++) {
         const tokenAddr = (tokensArr[i] || ethers.ZeroAddress).toLowerCase();
-        const rawCollateralAmount = amountsArr[i] || 0n;
+        const rawCollateralAmount = amountsArr[i] || BigInt(0);
         const amount = Number(
           ethers.formatUnits(
             rawCollateralAmount,
@@ -167,18 +179,20 @@ export function useCollateralData() {
                 : statusMeta.status === "moderate"
                 ? "warning"
                 : "danger",
-            // @ts-expect-error expose extra details for UI tooltips
-            _details: {
-              collateralRatioPct: (collateralRatioBps / 100).toFixed(2),
-              liquidationThresholdPct: (liquidationThresholdBps / 100).toFixed(
-                2
-              ),
-            },
-            // @ts-expect-error expose flags for UI actions
-            _flags: {
-              isFunded,
-              canCancel: !isFunded && isActive,
-            },
+            // Additional properties needed by the UI
+            loanId: loanId.toString(),
+            loanToken: loan.tokenAddress || ethers.ZeroAddress,
+            collateralTokens: [
+              {
+                token: tokensArr[i],
+                amount: amount,
+                symbol: symbol,
+              },
+            ],
+            totalCollateralValue: Number(collateralValueUSD.toFixed(2)),
+            canCancel: !isFunded && isActive,
+            canAddCollateral: isFunded && isActive,
+            canWithdrawExcess: isFunded && isActive && healthFactor > 2.0,
           });
         } catch {
           // If loan fetch fails, still account the asset

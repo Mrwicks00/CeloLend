@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, Loader2 } from "lucide-react";
+import { LenderClaims } from "./LenderClaims";
 import { RepaymentCard } from "./RepaymentCard";
 import { useLoanRepayment } from "@/hooks/useLoanRepayment";
 
@@ -85,9 +86,10 @@ export function RepaymentSection() {
               </p>
             </div>
           )}
+          {/* Lender Claims Section */}
+          <LenderClaims />
         </div>
       </CardContent>
     </Card>
   );
 }
-

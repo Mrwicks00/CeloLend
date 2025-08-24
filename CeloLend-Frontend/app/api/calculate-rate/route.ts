@@ -153,16 +153,21 @@ const calculator = new InterestRateCalculator();
 export async function POST(request: NextRequest) {
   try {
     const body: RateRequest = await request.json();
+    console.log('API received:', body); 
 
     // Validate input
     if (
-      !body.creditScore ||
-      !body.loanAmount ||
-      !body.loanTerm ||
-      !body.collateralRatio
+      body.creditScore === undefined ||
+      body.loanAmount === undefined ||
+      body.loanTerm === undefined ||
+      body.collateralRatio === undefined ||
+      body.creditScore < 0 ||
+      body.loanAmount <= 0 ||
+      body.loanTerm <= 0 ||
+      body.collateralRatio <= 0
     ) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields", body },
         { status: 400 }
       );
     }

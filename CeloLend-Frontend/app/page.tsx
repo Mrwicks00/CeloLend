@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Navigation } from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
 import {
   ArrowRight,
   Shield,
@@ -16,36 +17,136 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      {/* Hero Section with organic background */}
-      <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="absolute top-20 right-10 w-32 h-32 bg-gradient-to-br from-[#e54041] to-[#ff4757] opacity-20 blob-shape floating"></div>
-        <div className="absolute bottom-10 left-10 w-24 h-24 bg-gradient-to-br from-[#ff6f61] to-[#e57373] opacity-30 blob-shape-2 floating-delayed"></div>
+      {/* Hero Banner Section */}
+      <section className="relative h-[80vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+        {/* Background Banner Image */}
+        <div className="absolute inset-0 w-full h-full">
+          <Image
+            src="/bannerCelo.png"
+            alt="CeloLend Banner"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Dark overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+        </div>
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              P2P Lending on Celo
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#e54041] to-[#ff4757] animate-gradient">
-                With Identity Verification
-              </span>
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Secure peer-to-peer lending with Self Protocol identity
-              verification. Support for CELO and Mento stablecoins (cUSD, cEUR,
-              cREAL) with dynamic interest rates and smart contract automation.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/onboarding">
-                <Button className="btn-primary px-8 py-3 text-lg animate-gentle-bounce">
-                  Start Borrowing
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Button className="btn-secondary px-8 py-3 text-lg">
-                Become a Lender
-              </Button>
+        {/* Floating decorative elements */}
+        <div className="absolute top-20 right-10 w-32 h-32 bg-gradient-to-br from-[#e54041] to-[#ff4757] opacity-20 blob-shape floating"></div>
+        <div className="absolute bottom-20 left-10 w-24 h-24 bg-gradient-to-br from-[#ff6f61] to-[#e57373] opacity-30 blob-shape-2 floating-delayed"></div>
+        <div
+          className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-br from-[#ff4757] to-[#e57373] opacity-25 blob-shape floating"
+          style={{ animationDelay: "1s" }}
+        ></div>
+
+        {/* Content */}
+        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          {/* Subtitle with enhanced styling */}
+          <div className="mb-16">
+            <div className="bg-black/30 backdrop-blur-md rounded-3xl p-6 sm:p-8 lg:p-10 border border-white/20 max-w-5xl mx-auto">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl text-white font-bold mb-6 max-w-4xl mx-auto leading-tight">
+                Secure peer-to-peer lending with identity-gated access
+              </h2>
+              <p className="text-lg sm:text-xl lg:text-2xl text-white/90 font-semibold max-w-3xl mx-auto leading-relaxed">
+                Support for CELO and Mento stablecoins with dynamic interest
+                rates and smart contract automation
+              </p>
             </div>
           </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20">
+            <Link href="/onboarding">
+              <Button className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-8 sm:px-10 py-3 sm:py-4 text-lg sm:text-xl font-bold rounded-2xl shadow-2xl hover:shadow-orange-500/25 transition-all duration-300 hover:-translate-y-1 hover:scale-105 animate-gentle-bounce w-full sm:w-auto">
+                Start Borrowing
+                <ArrowRight className="w-5 sm:w-6 h-5 sm:h-6 ml-2 sm:ml-3" />
+              </Button>
+            </Link>
+            <Button className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-2 border-white/30 hover:border-white/50 px-8 sm:px-10 py-3 sm:py-4 text-lg sm:text-xl font-bold rounded-2xl shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105 w-full sm:w-auto">
+              Become a Lender
+            </Button>
+          </div>
+
+          {/* Feature highlights */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-7xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
+              <div className="w-14 sm:w-16 h-14 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-xl overflow-hidden">
+                <Image
+                  src="/secure-access.png"
+                  alt="Secure Access"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h3 className="text-white font-semibold text-base sm:text-lg mb-2">
+                Secure Access
+              </h3>
+              <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+                Identity-gated lending platform
+              </p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
+              <div className="w-14 sm:w-16 h-14 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-xl overflow-hidden">
+                <Image
+                  src="/mutli-token.jpg"
+                  alt="Multi-Token Support"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h3 className="text-white font-semibold text-base sm:text-lg mb-2">
+                Multi-Token
+              </h3>
+              <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+                CELO, cUSD, cEUR, cREAL support
+              </p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
+              <div className="w-14 sm:w-16 h-14 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-xl overflow-hidden">
+                <Image
+                  src="/dynamic-pricing.avif"
+                  alt="Dynamic Pricing"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h3 className="text-white font-semibold text-base sm:text-lg mb-2">
+                Dynamic Rates
+              </h3>
+              <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+                Real-time pricing & automation
+              </p>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
+              <div className="w-14 sm:w-16 h-14 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-xl overflow-hidden">
+                <Image
+                  src="/self-protocol.jpg"
+                  alt="Self Protocol"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h3 className="text-white font-semibold text-base sm:text-lg mb-2">
+                Self Protocol
+              </h3>
+              <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
+                Privacy-preserving verification
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-6 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
         </div>
       </section>
 

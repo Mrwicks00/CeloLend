@@ -33,6 +33,8 @@ import { useSelfProtocol } from "@/contexts/SelfProtocolContext";
 import { useSupportedTokens } from "@/hooks/useSupportedTokens";
 import { useLoanLimits } from "@/hooks/useLoanLimits";
 import { formatTokenAmount } from "@/lib/contracts/contractHelpers";
+import { getTokenImage } from "@/lib/utils";
+import Image from "next/image";
 import { calculateInterestRate } from "@/lib/interestRateUtils";
 import { ethers } from "ethers";
 
@@ -352,10 +354,14 @@ export function CreateLoanRequest() {
                       <SelectItem key={token.address} value={token.address}>
                         <div className="flex items-center justify-between w-full pr-4">
                           <div className="flex items-center space-x-2">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                              <span className="text-white text-xs font-bold">
-                                {token.symbol.charAt(0)}
-                              </span>
+                            <div className="w-6 h-6 rounded-full overflow-hidden">
+                              <Image
+                                src={getTokenImage(token.symbol)}
+                                alt={token.symbol}
+                                width={24}
+                                height={24}
+                                className="w-full h-full object-cover"
+                              />
                             </div>
                             <span className="font-medium">{token.symbol}</span>
                             {token.isMentoStablecoin && (
@@ -471,10 +477,14 @@ export function CreateLoanRequest() {
                       <SelectItem key={token.address} value={token.address}>
                         <div className="flex items-center justify-between w-full pr-4">
                           <div className="flex items-center space-x-2">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center">
-                              <span className="text-white text-xs font-bold">
-                                {token.symbol.charAt(0)}
-                              </span>
+                            <div className="w-6 h-6 rounded-full overflow-hidden">
+                              <Image
+                                src={getTokenImage(token.symbol)}
+                                alt={token.symbol}
+                                width={24}
+                                height={24}
+                                className="w-full h-full object-cover"
+                              />
                             </div>
                             <span className="font-medium">{token.symbol}</span>
                             <Badge variant="outline" className="text-xs">

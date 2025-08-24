@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
 import { useSupportedTokens, TokenInfo } from "@/hooks/useSupportedTokens";
+import { getTokenImage } from "@/lib/utils";
+import Image from "next/image";
 
 interface TokenBalanceCardProps {
   token: TokenInfo;
@@ -10,23 +12,28 @@ interface TokenBalanceCardProps {
   className?: string;
 }
 
-export function TokenBalanceCard({ 
-  token, 
-  showPrice = true, 
+export function TokenBalanceCard({
+  token,
+  showPrice = true,
   showBalance = true,
-  className = ""
+  className = "",
 }: TokenBalanceCardProps) {
-  const balanceValue = parseFloat(token.balanceFormatted) * parseFloat(token.priceFormatted);
+  const balanceValue =
+    parseFloat(token.balanceFormatted) * parseFloat(token.priceFormatted);
 
   return (
     <Card className={`${className}`}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
-              <span className="text-sm font-bold text-primary">
-                {token.symbol.charAt(0)}
-              </span>
+            <div className="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden">
+              <Image
+                src={getTokenImage(token.symbol)}
+                alt={token.symbol}
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <div className="flex items-center space-x-2">
@@ -44,7 +51,7 @@ export function TokenBalanceCard({
               )}
             </div>
           </div>
-          
+
           {showBalance && (
             <div className="text-right">
               <div className="flex items-center space-x-1 text-sm font-medium">
@@ -70,10 +77,10 @@ interface TokenBalanceGridProps {
   showBalances?: boolean;
 }
 
-export function TokenBalanceGrid({ 
+export function TokenBalanceGrid({
   className = "",
   showPrices = true,
-  showBalances = true
+  showBalances = true,
 }: TokenBalanceGridProps) {
   const { tokens, loading, error } = useSupportedTokens();
 
@@ -94,7 +101,9 @@ export function TokenBalanceGrid({
 
   if (error) {
     return (
-      <div className={`p-4 bg-red-500/10 border border-red-500/20 rounded-lg ${className}`}>
+      <div
+        className={`p-4 bg-red-500/10 border border-red-500/20 rounded-lg ${className}`}
+      >
         <p className="text-red-600">{error}</p>
       </div>
     );
@@ -109,23 +118,26 @@ export function TokenBalanceGrid({
   }
 
   const totalValue = tokens.reduce((sum, token) => {
-    return sum + (parseFloat(token.balanceFormatted) * parseFloat(token.priceFormatted));
+    return (
+      sum +
+      parseFloat(token.balanceFormatted) * parseFloat(token.priceFormatted)
+    );
   }, 0);
 
   return (
     <div className={`space-y-4 ${className}`}>
       {showBalances && (
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Your Tokens</h3>
-          {showPrices && (
+          <h3 className="text-lg font-semibold">Tokens</h3>
+          {/* {showPrices && (
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Total Value</p>
               <p className="text-lg font-bold">${totalValue.toFixed(2)}</p>
             </div>
-          )}
+          )} */}
         </div>
       )}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {tokens.map((token) => (
           <TokenBalanceCard

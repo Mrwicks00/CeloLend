@@ -51,8 +51,22 @@ export function SelfProtocolProvider({ children }: SelfProtocolProviderProps) {
     try {
       console.log("Checking verification for address:", address);
 
-      const isVerified = await celoLend.isUserVerified(address);
-      const userIdentifier = await celoLend.getUserIdentifier(address);
+      let isVerified = false;
+      let userIdentifier = null;
+
+      try {
+        isVerified = await celoLend.isUserVerified(address);
+      } catch (error) {
+        console.warn("Could not check verification status:", error);
+        isVerified = false;
+      }
+
+      try {
+        userIdentifier = await celoLend.getUserIdentifier(address);
+      } catch (error) {
+        console.warn("Could not get user identifier:", error);
+        userIdentifier = null;
+      }
 
       console.log("Contract response:", { isVerified, userIdentifier });
 

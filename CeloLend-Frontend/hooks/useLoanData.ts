@@ -68,7 +68,13 @@ export function useLoanData() {
       setError(null);
 
       // Get user's loan IDs
-      const userLoanIds = await celoLend.getUserLoans(address);
+      let userLoanIds: bigint[] = [];
+      try {
+        userLoanIds = await celoLend.getUserLoans(address);
+      } catch (error) {
+        console.warn("Could not fetch user loans:", error);
+        userLoanIds = [];
+      }
 
       // Get platform stats
       const platformStats = await celoLend.getPlatformStats();
@@ -132,7 +138,13 @@ export function useLoanData() {
       setIsLoading(true);
       setError(null);
 
-      const userLoanIds = await celoLend.getUserLoans(address);
+      let userLoanIds: bigint[] = [];
+      try {
+        userLoanIds = await celoLend.getUserLoans(address);
+      } catch (error) {
+        console.warn("Could not fetch user loans for positions:", error);
+        userLoanIds = [];
+      }
       const positions: LoanPosition[] = [];
 
       for (const loanId of userLoanIds) {
@@ -201,7 +213,13 @@ export function useLoanData() {
       setIsLoading(true);
       setError(null);
 
-      const activeRequests = await celoLend.getActiveLoanRequests();
+      let activeRequests: bigint[] = [];
+      try {
+        activeRequests = await celoLend.getActiveLoanRequests();
+      } catch (error) {
+        console.warn("Could not fetch active loan requests:", error);
+        activeRequests = [];
+      }
       const requests: LoanRequest[] = [];
 
       for (const requestId of activeRequests) {

@@ -277,6 +277,7 @@ export function useLoanRepayment() {
     calculateRepayment,
     makePayment,
     getUserActiveLoans,
+    // Expose raw contract for claims if needed
+    loanRepaymentContract: loanRepayment,
   };
 }
-

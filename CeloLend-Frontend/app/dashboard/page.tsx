@@ -2,6 +2,7 @@
 
 import { Navigation } from "@/components/navigation";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { PortfolioSummary } from "@/components/dashboard/PortfolioSummary";
 import { LoanPositions } from "@/components/dashboard/LoanPositions";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
@@ -32,6 +33,9 @@ export default function DashboardPage() {
 
           {/* Quick Stats */}
           <DashboardStats />
+
+          {/* Portfolio Summary */}
+          {isAuthenticated && isVerified && <PortfolioSummary />}
 
           {/* Token Balances */}
           {isAuthenticated && isVerified && (

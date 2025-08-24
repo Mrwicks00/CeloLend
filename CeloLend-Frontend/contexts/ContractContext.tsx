@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { ethers } from "ethers";
 import { useWallet } from "./WalletContext";
+import { useWallets } from "@privy-io/react-auth";
 import { CONTRACT_ADDRESSES } from "@/lib/contracts/addresses";
 import {
   CELO_LEND_ABI,
@@ -51,6 +52,7 @@ const ContractContext = createContext<ContractContextType | undefined>(
 
 export function ContractProvider({ children }: { children: React.ReactNode }) {
   const { address, isAuthenticated, chainId } = useWallet();
+  const { wallets } = useWallets();
 
   const [contracts, setContracts] = useState<{
     celoLend: ethers.Contract | null;
@@ -96,21 +98,17 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
           : "https://forno.celo.org"
       );
 
-      // Get signer from the window.ethereum provider for transactions
+      // Get signer from Privy wallet for transactions
       let contractRunner: ethers.ContractRunner = provider;
-      if (
-        typeof window !== "undefined" &&
-        window.ethereum &&
-        typeof window.ethereum.request === "function"
-      ) {
+      const wallet = wallets[0];
+      if (wallet) {
         try {
-          const browserProvider = new ethers.BrowserProvider(
-            window.ethereum as unknown as ethers.Eip1193Provider
-          );
+          const walletProvider = await wallet.getEthereumProvider();
+          const browserProvider = new ethers.BrowserProvider(walletProvider);
           contractRunner = await browserProvider.getSigner();
         } catch (signerError) {
           console.warn(
-            "Could not get signer, using read-only provider:",
+            "Could not get signer from Privy wallet, using read-only provider:",
             signerError
           );
         }
@@ -184,7 +182,7 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated, address, chainId]);
+  }, [isAuthenticated, address, chainId, wallets]);
 
   const getContract = useCallback(
     (contractName: keyof typeof CONTRACT_ADDRESSES.alfajores) => {
@@ -223,7 +221,7 @@ export function ContractProvider({ children }: { children: React.ReactNode }) {
         loanRepayment: null,
       });
     }
-  }, [isAuthenticated, address, connectContracts]);
+  }, [isAuthenticated, address, connectContracts, wallets]);
 
   const value: ContractContextType = {
     ...contracts,

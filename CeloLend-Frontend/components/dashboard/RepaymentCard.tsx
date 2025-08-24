@@ -43,7 +43,7 @@ export function RepaymentCard({
     calculation,
   } = useLoanRepayment();
 
-  const { supportedTokens } = useSupportedTokens();
+  const { tokens: supportedTokens } = useSupportedTokens();
 
   const [paymentAmount, setPaymentAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState(
@@ -345,4 +345,3 @@ export function RepaymentCard({
     </Card>
   );
 }
-

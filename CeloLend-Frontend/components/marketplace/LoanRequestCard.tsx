@@ -19,6 +19,7 @@ import {
   getCreditScoreTier,
 } from "@/lib/contracts/contractHelpers";
 import { useMarketplaceData } from "@/hooks/useMarketplaceData";
+import { getContractAddress } from "@/lib/contracts/addresses";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLoanRepayment } from "@/hooks/useLoanRepayment";
 import { ethers } from "ethers";
@@ -29,7 +30,8 @@ interface LoanRequestCardProps {
 }
 
 export function LoanRequestCard({ request }: LoanRequestCardProps) {
-  const { fundLoan, cancelLoanRequest } = useMarketplaceData();
+  const { fundLoan, cancelLoanRequest, checkTokenAllowance, approveToken } =
+    useMarketplaceData();
   const { address, isConnected } = useWallet();
   const { getLoanRepaymentInfo } = useLoanRepayment();
   const [fundAmount, setFundAmount] = useState("");
@@ -39,7 +41,7 @@ export function LoanRequestCard({ request }: LoanRequestCardProps) {
   const [cancelError, setCancelError] = useState<string | null>(null);
 
   const creditScoreInfo = getCreditScoreTier(request.borrowerCreditScore);
-  const interestRatePercent = Number(request.interestRate) / 100; // Convert from basis points
+  const interestRatePercent = Number(request.interestRate); // Convert from basis points
   const fundingProgress =
     request.amount > BigInt(0)
       ? Number((request.fundedAmount * BigInt(100)) / request.amount)
@@ -93,9 +95,21 @@ export function LoanRequestCard({ request }: LoanRequestCardProps) {
     try {
       toast.info("Processing loan funding...", { autoClose: 2000 });
       const amount = ethers.parseEther(fundAmount);
+      // If ERC20, ensure allowance
+      if (request.tokenAddress !== ethers.ZeroAddress) {
+        const spender = getContractAddress("CeloLend");
+        const allowance = await checkTokenAllowance(
+          request.tokenAddress,
+          amount,
+          spender
+        );
+        if (allowance.needsApproval) {
+          await approveToken(request.tokenAddress, spender);
+        }
+      }
       await fundLoan(request.id, amount);
       setFundAmount("");
-      toast.success(`Successfully funded ${fundAmount} CELO!`, {
+      toast.success(`Successfully funded ${fundAmount}!`, {
         autoClose: 5000,
       });
     } catch (error) {
