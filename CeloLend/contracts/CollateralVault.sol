@@ -5,10 +5,9 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./PriceOracle.sol";
-import "./CeloLend.sol";
 
 contract CollateralVault is Ownable, ReentrancyGuard {
-    // Collateral tracking
+    // Collateral tracking (legacy single entry)
     struct CollateralDeposit {
         address owner;
         address token;
@@ -20,7 +19,10 @@ contract CollateralVault is Ownable, ReentrancyGuard {
 
     // Mappings
     mapping(address => mapping(address => uint256)) public userTokenBalances; // user => token => amount
-    mapping(uint256 => CollateralDeposit) public loanCollateral; // loanId => collateral details
+    mapping(uint256 => CollateralDeposit) public loanCollateral; // loanId => collateral details (legacy, first deposit)
+    // Multi-collateral: tokenized balances per loan
+    mapping(uint256 => mapping(address => uint256)) public loanTokenAmounts; // loanId => token => amount
+    mapping(uint256 => address[]) public loanCollateralTokens; // loanId => list of tokens
     mapping(address => uint256[]) public userCollateralLoans; // user => loan IDs with collateral
 
     // Authorized contracts (CeloLend main contract, LoanAgreement contracts)
@@ -28,9 +30,6 @@ contract CollateralVault is Ownable, ReentrancyGuard {
 
     // Price oracle for accurate valuations
     PriceOracle public priceOracle;
-
-    // CeloLend main contract instance
-    CeloLend public celoLend;
 
     // Supported tokens and their liquidation settings
     mapping(address => bool) public supportedCollateralTokens;
@@ -78,14 +77,6 @@ contract CollateralVault is Ownable, ReentrancyGuard {
 
     constructor() Ownable(msg.sender) {}
 
-    /**
-     * @notice Set the CeloLend contract address
-     * @param _celoLend Address of the CeloLend contract
-     */
-    function setCeloLend(address payable _celoLend) external onlyOwner {
-        celoLend = CeloLend(_celoLend);
-    }
-
     function setPriceOracle(address _priceOracle) external onlyOwner {
         require(_priceOracle != address(0), "Invalid oracle address");
         priceOracle = PriceOracle(_priceOracle);
@@ -104,15 +95,28 @@ contract CollateralVault is Ownable, ReentrancyGuard {
         );
         require(amount > 0, "Amount must be positive");
 
-        // Store collateral details
-        loanCollateral[loanId] = CollateralDeposit({
-            owner: user,
-            token: token,
-            amount: amount,
-            loanId: loanId,
-            isLocked: true,
-            lockedAt: block.timestamp
-        });
+        // Store legacy details only if not already set
+        if (loanCollateral[loanId].owner == address(0)) {
+            loanCollateral[loanId] = CollateralDeposit({
+                owner: user,
+                token: token,
+                amount: amount,
+                loanId: loanId,
+                isLocked: true,
+                lockedAt: block.timestamp
+            });
+        } else {
+            // Increase legacy amount for backward compatibility when same token
+            if (loanCollateral[loanId].token == token) {
+                loanCollateral[loanId].amount += amount;
+            }
+        }
+
+        // Multi-collateral accounting
+        if (loanTokenAmounts[loanId][token] == 0) {
+            loanCollateralTokens[loanId].push(token);
+        }
+        loanTokenAmounts[loanId][token] += amount;
 
         // Update user balances
         userTokenBalances[user][token] += amount;
@@ -121,6 +125,51 @@ contract CollateralVault is Ownable, ReentrancyGuard {
         // Update statistics
         totalDepositsCount++;
         activeLoansCount++;
+        tokenTotalLocked[token] += amount;
+
+        emit CollateralLocked(user, token, amount, loanId);
+    }
+
+    // Lock additional collateral tokens for an existing loan (multi-collateral)
+    function lockAdditionalCollateral(
+        address user,
+        address token,
+        uint256 amount,
+        uint256 loanId
+    ) external onlyAuthorized {
+        require(
+            supportedCollateralTokens[token],
+            "Token not supported as collateral"
+        );
+        require(amount > 0, "Amount must be positive");
+
+        // Check if this loan exists and user owns it
+        require(loanCollateral[loanId].owner == user, "Not loan owner");
+        require(loanCollateral[loanId].isLocked, "Loan not active");
+
+        // Record in multi-collateral structures
+        if (loanTokenAmounts[loanId][token] == 0) {
+            loanCollateralTokens[loanId].push(token);
+        }
+        loanTokenAmounts[loanId][token] += amount;
+
+        // Update user balances (don't add duplicate loan IDs)
+        userTokenBalances[user][token] += amount;
+
+        // Only add to userCollateralLoans if not already there
+        bool loanAlreadyTracked = false;
+        for (uint i = 0; i < userCollateralLoans[user].length; i++) {
+            if (userCollateralLoans[user][i] == loanId) {
+                loanAlreadyTracked = true;
+                break;
+            }
+        }
+        if (!loanAlreadyTracked) {
+            userCollateralLoans[user].push(loanId);
+        }
+
+        // Update statistics
+        totalDepositsCount++;
         tokenTotalLocked[token] += amount;
 
         emit CollateralLocked(user, token, amount, loanId);
@@ -181,28 +230,42 @@ contract CollateralVault is Ownable, ReentrancyGuard {
     /**
      * @notice Release collateral after loan repayment (called by LoanRepayment contract)
      * @param loanId The loan ID for which to release collateral
+     * @param borrower The borrower address
+     * @param collateralToken The primary collateral token
+     * @param collateralAmount The primary collateral amount
      */
-    function releaseCollateralAfterRepayment(uint256 loanId) external {
-        address repaymentContract = celoLend.loanRepaymentContract();
+    function releaseCollateralAfterRepayment(
+        uint256 loanId,
+        address borrower,
+        address collateralToken,
+        uint256 collateralAmount
+    ) external {
         require(
-            msg.sender == repaymentContract,
-            "Only LoanRepayment contract can call"
+            authorizedContracts[msg.sender],
+            "Only authorized contracts can call"
         );
 
-        // Get loan details to determine collateral to release
-        CeloLend.LoanRequest memory loanRequest = celoLend.getLoanRequest(
-            loanId
-        );
-
-        require(loanRequest.collateralAmount > 0, "No collateral to release");
-
-        // Release the collateral back to borrower
-        _releaseCollateralInternal(
-            loanRequest.borrower,
-            loanRequest.collateralToken,
-            loanRequest.collateralAmount,
-            loanId
-        );
+        // Release all collateral tokens registered for this loan
+        address[] memory tokens = loanCollateralTokens[loanId];
+        if (tokens.length == 0) {
+            // Fallback to legacy path
+            require(collateralAmount > 0, "No collateral to release");
+            _releaseCollateralInternal(
+                borrower,
+                collateralToken,
+                collateralAmount,
+                loanId
+            );
+        } else {
+            for (uint i = 0; i < tokens.length; i++) {
+                address t = tokens[i];
+                uint256 amt = loanTokenAmounts[loanId][t];
+                if (amt > 0) {
+                    _releaseCollateralInternal(borrower, t, amt, loanId);
+                    loanTokenAmounts[loanId][t] = 0;
+                }
+            }
+        }
     }
 
     /**
@@ -367,10 +430,10 @@ contract CollateralVault is Ownable, ReentrancyGuard {
         )
     {
         uint256[] memory loans = userCollateralLoans[user];
+        // Legacy: return one entry per loan (first token)
         tokens = new address[](loans.length);
         amounts = new uint256[](loans.length);
         loanIds = new uint256[](loans.length);
-
         for (uint i = 0; i < loans.length; i++) {
             CollateralDeposit memory deposit = loanCollateral[loans[i]];
             tokens[i] = deposit.token;
@@ -378,6 +441,42 @@ contract CollateralVault is Ownable, ReentrancyGuard {
             loanIds[i] = deposit.loanId;
         }
 
+        return (tokens, amounts, loanIds);
+    }
+
+    // V2 details: flattened arrays, one entry per token per loan
+    function getUserCollateralDetailsV2(
+        address user
+    )
+        external
+        view
+        returns (
+            address[] memory tokens,
+            uint256[] memory amounts,
+            uint256[] memory loanIds
+        )
+    {
+        uint256[] memory loans = userCollateralLoans[user];
+        // Count entries
+        uint256 count = 0;
+        for (uint i = 0; i < loans.length; i++) {
+            count += loanCollateralTokens[loans[i]].length;
+        }
+        tokens = new address[](count);
+        amounts = new uint256[](count);
+        loanIds = new uint256[](count);
+        uint256 idx = 0;
+        for (uint i = 0; i < loans.length; i++) {
+            uint256 loanId = loans[i];
+            address[] memory tks = loanCollateralTokens[loanId];
+            for (uint j = 0; j < tks.length; j++) {
+                address t = tks[j];
+                tokens[idx] = t;
+                amounts[idx] = loanTokenAmounts[loanId][t];
+                loanIds[idx] = loanId;
+                idx++;
+            }
+        }
         return (tokens, amounts, loanIds);
     }
 
@@ -395,6 +494,59 @@ contract CollateralVault is Ownable, ReentrancyGuard {
         address token
     ) external view returns (uint256) {
         return tokenTotalLocked[token];
+    }
+
+    // Loan-level collateral details (multi-collateral)
+    function getLoanCollateralDetails(
+        uint256 loanId
+    )
+        external
+        view
+        returns (address[] memory tokens, uint256[] memory amounts)
+    {
+        address[] memory tks = loanCollateralTokens[loanId];
+        tokens = new address[](tks.length);
+        amounts = new uint256[](tks.length);
+        for (uint i = 0; i < tks.length; i++) {
+            tokens[i] = tks[i];
+            amounts[i] = loanTokenAmounts[loanId][tks[i]];
+        }
+        return (tokens, amounts);
+    }
+
+    /**
+     * @notice Get user's collateral positions grouped by loan
+     * @param user The user address
+     * @return loanIds Array of loan IDs
+     * @return tokens Array of arrays of token addresses per loan
+     * @return amounts Array of arrays of amounts per loan
+     */
+    function getUserCollateralPositions(
+        address user
+    )
+        external
+        view
+        returns (
+            uint256[] memory loanIds,
+            address[][] memory tokens,
+            uint256[][] memory amounts
+        )
+    {
+        uint256[] memory userLoans = userCollateralLoans[user];
+        address[][] memory allTokens = new address[][](userLoans.length);
+        uint256[][] memory allAmounts = new uint256[][](userLoans.length);
+
+        for (uint i = 0; i < userLoans.length; i++) {
+            uint256 loanId = userLoans[i];
+            (
+                address[] memory loanTokens,
+                uint256[] memory loanAmounts
+            ) = this.getLoanCollateralDetails(loanId);
+            allTokens[i] = loanTokens;
+            allAmounts[i] = loanAmounts;
+        }
+
+        return (userLoans, allTokens, allAmounts);
     }
 
     function getVaultStats()

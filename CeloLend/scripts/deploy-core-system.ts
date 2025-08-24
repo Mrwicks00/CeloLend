@@ -96,9 +96,6 @@ async function main() {
   console.log("\n🔗 Setting up contract connections...");
 
   // Step 8: Connect contracts
-  console.log("Setting CeloLend in CollateralVault...");
-  await collateralVault.setCeloLend(celoLendAddress);
-
   console.log("Setting PriceOracle in CollateralVault...");
   await collateralVault.setPriceOracle(priceOracleAddress);
 
@@ -175,7 +172,7 @@ async function main() {
 
   console.log("\n🎉 Core CeloLend System Deployment Complete!");
   console.log("\n📋 DEPLOYMENT SUMMARY:");
-  console.log("=" * 50);
+  console.log("=".repeat(50));
   console.log(`PriceOracle:      ${priceOracleAddress}`);
   console.log(`CreditScore:      ${creditScoreAddress}`);
   console.log(`MentoIntegration: ${mentoIntegrationAddress}`);
@@ -183,7 +180,7 @@ async function main() {
   console.log(`Treasury:         ${treasuryAddress}`);
   console.log(`CeloLend:         ${celoLendAddress}`);
   console.log(`LoanRepayment:    ${loanRepaymentAddress}`);
-  console.log("=" * 50);
+  console.log("=".repeat(50));
 
   // Generate addresses.ts content for frontend
   console.log("\n📱 Frontend Integration:");
@@ -274,7 +271,10 @@ export const CONTRACT_ADDRESSES = {
     console.log(
       "⚠️  Contract verification failed (this is normal for local/private networks)"
     );
-    console.log("   Verification error:", error.message);
+    console.log(
+      "   Verification error:",
+      error instanceof Error ? error.message : String(error)
+    );
   }
 
   console.log("\n✅ Ready to test loan creation and repayment functionality!");

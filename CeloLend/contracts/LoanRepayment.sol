@@ -33,7 +33,7 @@ contract LoanRepayment is ReentrancyGuard {
         uint256 totalRepaid;
         uint256 lastPaymentTime;
         RepaymentStatus status;
-        address lender;
+        address lender; // set to CeloLend when multi-lender; split handled via claim
         address borrower;
         address loanToken;
         bool isEarlyRepayment;
@@ -93,10 +93,7 @@ contract LoanRepayment is ReentrancyGuard {
             loanId
         );
 
-        require(
-            loanRequest.isFunded && loanRequest.isActive,
-            "Loan must be funded and active"
-        );
+        require(loanRequest.isFunded, "Loan must be funded");
         require(
             loanRepayments[loanId].loanId == 0,
             "Repayment already initialized"
@@ -170,7 +167,7 @@ contract LoanRepayment is ReentrancyGuard {
         LoanRepaymentInfo storage loan = loanRepayments[loanId];
         require(loan.loanId != 0, "Loan not found");
         require(loan.status == RepaymentStatus.Active, "Loan not active");
-        require(msg.sender == loan.borrower, "Only borrower can make payment");
+        // Allow third-party payments on behalf of borrower
 
         (uint256 totalOwed, uint256 interestOwed) = calculateAmountOwed(loanId);
         require(totalOwed > 0, "No amount owed");
@@ -185,11 +182,32 @@ contract LoanRepayment is ReentrancyGuard {
             // Native token (CELO)
             require(msg.value >= paymentAmount, "Insufficient CELO sent");
 
-            // Send payment to lender
-            (bool success, ) = payable(loan.lender).call{value: paymentAmount}(
-                ""
-            );
-            require(success, "Payment transfer failed");
+            // If multi-lender (lender == CeloLend), split to all lenders
+            if (loan.lender == address(celoLend)) {
+                address[] memory lenders = celoLend.getLendersByLoan(loanId);
+                uint256 totalFunded = celoLend.getTotalFundedByLoan(loanId);
+                for (uint i = 0; i < lenders.length; i++) {
+                    address l = lenders[i];
+                    uint256 contributed = celoLend.getLenderContribution(
+                        loanId,
+                        l
+                    );
+                    if (contributed > 0) {
+                        uint256 share = (paymentAmount * contributed) /
+                            totalFunded;
+                        if (share > 0) {
+                            (bool ok, ) = payable(l).call{value: share}("");
+                            require(ok, "Lender payout failed");
+                        }
+                    }
+                }
+            } else {
+                // Single lender case
+                (bool success, ) = payable(loan.lender).call{
+                    value: paymentAmount
+                }("");
+                require(success, "Payment transfer failed");
+            }
 
             // Refund excess
             if (msg.value > paymentAmount) {
@@ -201,11 +219,34 @@ contract LoanRepayment is ReentrancyGuard {
         } else {
             // ERC20 token
             require(msg.value == 0, "No ETH needed for ERC20 payment");
-            IERC20(loan.loanToken).transferFrom(
-                msg.sender,
-                loan.lender,
-                paymentAmount
-            );
+            if (loan.lender == address(celoLend)) {
+                address[] memory lenders = celoLend.getLendersByLoan(loanId);
+                uint256 totalFunded = celoLend.getTotalFundedByLoan(loanId);
+                for (uint i = 0; i < lenders.length; i++) {
+                    address l = lenders[i];
+                    uint256 contributed = celoLend.getLenderContribution(
+                        loanId,
+                        l
+                    );
+                    if (contributed > 0) {
+                        uint256 share = (paymentAmount * contributed) /
+                            totalFunded;
+                        if (share > 0) {
+                            IERC20(loan.loanToken).transferFrom(
+                                msg.sender,
+                                l,
+                                share
+                            );
+                        }
+                    }
+                }
+            } else {
+                IERC20(loan.loanToken).transferFrom(
+                    msg.sender,
+                    loan.lender,
+                    paymentAmount
+                );
+            }
         }
 
         // Calculate how much goes to interest vs principal
@@ -227,7 +268,16 @@ contract LoanRepayment is ReentrancyGuard {
             loan.isEarlyRepayment = block.timestamp < loanEndTime;
 
             // Release collateral back to borrower
-            collateralVault.releaseCollateralAfterRepayment(loanId);
+            // Get loan details from CeloLend to get collateral info
+            CeloLend.LoanRequest memory loanRequest = celoLend.getLoanRequest(
+                loanId
+            );
+            collateralVault.releaseCollateralAfterRepayment(
+                loanId,
+                loan.borrower,
+                loanRequest.collateralToken,
+                loanRequest.collateralAmount
+            );
 
             emit LoanFullyRepaid(
                 loanId,

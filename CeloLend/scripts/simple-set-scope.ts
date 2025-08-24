@@ -2,9 +2,9 @@ import { ethers } from "hardhat";
 
 async function main() {
   // UPDATE THESE VALUES
-  const CELOLEND_ADDRESS = "0xd78bC1F155b68CfA5CDda366E60C46a96afCd157"; // Your deployed CeloLend address
+  const CELOLEND_ADDRESS = "0xC93F278471594324242F911Fb4343D9bC2e57Dbc"; // Your deployed CeloLend address
   const SCOPE_HASH =
-    "3136980176717524484005940176752065794906353342553466435733151033902264440377"; // Your scope hash
+    "11062218128614317686196553676006547537492994331274935636004202511044291673113"; // Your scope hash
 
   console.log("Setting scope for CeloLend...");
   console.log("Address:", CELOLEND_ADDRESS);
