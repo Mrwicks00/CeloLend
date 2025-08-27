@@ -221,7 +221,7 @@ export function LoanRequestCard({ request }: LoanRequestCardProps) {
           </div>
 
           {fundError && (
-            <div className="flex items-center space-x-2 text-red-500 text-sm">
+            <div className="flex items-center space-x-2 text-yellow-600 text-sm">
               <AlertCircle className="w-4 h-4" />
               <span>{fundError}</span>
             </div>
@@ -358,7 +358,7 @@ export function LoanRequestCard({ request }: LoanRequestCardProps) {
         </div>
 
         {cancelError && (
-          <div className="flex items-center space-x-2 text-red-500 text-sm">
+          <div className="flex items-center space-x-2 text-yellow-600 text-sm">
             <AlertCircle className="w-4 h-4" />
             <span>{cancelError}</span>
           </div>
@@ -370,7 +370,7 @@ export function LoanRequestCard({ request }: LoanRequestCardProps) {
               variant="destructive"
               onClick={handleCancelLoan}
               disabled={isCancelling}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-yellow-500 hover:bg-yellow-600"
             >
               {isCancelling ? "Cancelling..." : "Cancel Request"}
             </Button>

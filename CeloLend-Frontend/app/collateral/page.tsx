@@ -97,7 +97,7 @@ export default function CollateralPage() {
     if (healthFactor >= 2.0) return "text-green-600";
     if (healthFactor >= 1.5) return "text-yellow-600";
     if (healthFactor >= 1.2) return "text-orange-600";
-    return "text-red-600";
+    return "text-yellow-600";
   };
 
   const getHealthFactorBadge = (healthFactor: number) => {
@@ -107,7 +107,7 @@ export default function CollateralPage() {
       return <Badge className="bg-yellow-100 text-yellow-800">Good</Badge>;
     if (healthFactor >= 1.2)
       return <Badge className="bg-orange-100 text-orange-800">Warning</Badge>;
-    return <Badge className="bg-red-100 text-red-800">Danger</Badge>;
+    return <Badge className="bg-yellow-100 text-yellow-800">Danger</Badge>;
   };
 
   const getAssetIcon = (type: string) => {
@@ -236,11 +236,13 @@ export default function CollateralPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-yellow-top-white-bottom">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Collateral Management</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-iphone-black mb-2">
+            Collateral Management
+          </h1>
+          <p className="text-foreground font-iphone">
             Manage your loan collateral and monitor your positions
           </p>
         </div>

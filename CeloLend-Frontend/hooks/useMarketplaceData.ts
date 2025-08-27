@@ -167,7 +167,7 @@ export function useMarketplaceData() {
         let tx;
         if (request.tokenAddress === ethers.ZeroAddress) {
           // Native CELO funding requires value
-          tx = await celoLend.fundLoan(loanId, amount, { value: amount });
+          tx = await celoLend.fundLoan(loanId, amount, { value: amount, gasLimit: 800000 });
         } else {
           tx = await celoLend.fundLoan(loanId, amount);
         }

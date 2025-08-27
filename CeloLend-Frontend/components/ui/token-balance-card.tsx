@@ -22,30 +22,35 @@ export function TokenBalanceCard({
     parseFloat(token.balanceFormatted) * parseFloat(token.priceFormatted);
 
   return (
-    <Card className={`${className}`}>
-      <CardContent className="p-4">
+    <Card className={`bg-card ${className}`}>
+      <CardContent className="p-5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-center w-10 h-10 rounded-2xl overflow-hidden bg-gray-50">
               <Image
                 src={getTokenImage(token.symbol)}
                 alt={token.symbol}
-                width={32}
-                height={32}
+                width={40}
+                height={40}
                 className="w-full h-full object-cover"
               />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
-                <h3 className="font-semibold">{token.symbol}</h3>
+              <div className="flex items-center space-x-2 mb-1">
+                <h3 className="font-iphone-bold text-lg text-foreground">
+                  {token.symbol}
+                </h3>
                 {token.isMentoStablecoin && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="text-xs font-iphone bg-gray-100 text-gray-700"
+                  >
                     Stable
                   </Badge>
                 )}
               </div>
               {showPrice && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-iphone text-foreground">
                   ${parseFloat(token.priceFormatted).toFixed(4)}
                 </p>
               )}
@@ -54,12 +59,12 @@ export function TokenBalanceCard({
 
           {showBalance && (
             <div className="text-right">
-              <div className="flex items-center space-x-1 text-sm font-medium">
-                <Wallet className="w-3 h-3" />
+              <div className="flex items-center space-x-2 text-sm font-iphone-bold text-foreground mb-1">
+                <Wallet className="w-4 h-4 text-foreground" />
                 <span>{parseFloat(token.balanceFormatted).toFixed(4)}</span>
               </div>
               {showPrice && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-iphone text-foreground font-medium">
                   ${balanceValue.toFixed(2)}
                 </p>
               )}
@@ -127,14 +132,18 @@ export function TokenBalanceGrid({
   return (
     <div className={`space-y-4 ${className}`}>
       {showBalances && (
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Tokens</h3>
-          {/* {showPrices && (
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-iphone-black text-foreground">
+            Token Portfolio
+          </h3>
+          {showPrices && (
             <div className="text-right">
-              <p className="text-sm text-muted-foreground">Total Value</p>
-              <p className="text-lg font-bold">${totalValue.toFixed(2)}</p>
+              <p className="text-sm font-iphone text-yellow-600">Total Value</p>
+              <p className="text-xl font-iphone-black text-yellow-700">
+                ${totalValue.toFixed(2)}
+              </p>
             </div>
-          )} */}
+          )}
         </div>
       )}
 

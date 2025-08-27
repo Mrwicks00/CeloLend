@@ -201,13 +201,13 @@ export function RepaymentCard({
 
         {/* Warning for overdue */}
         {info.isOverdue && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
+          <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <AlertTriangle className="h-4 w-4 text-yellow-600" />
             <div>
-              <p className="text-sm font-medium text-red-800">
+              <p className="text-sm font-medium text-yellow-800">
                 Payment Overdue
               </p>
-              <p className="text-xs text-red-600">
+              <p className="text-xs text-yellow-600">
                 Your payment is {info.daysOverdue} days late. Late fees may
                 apply.
               </p>

@@ -55,8 +55,11 @@ export function Navigation() {
   const WalletButton = () => {
     if (!isAuthenticated || !address) {
       return (
-        <Button onClick={login} className="btn-primary text-white px-6">
-          <Wallet className="w-4 h-4 mr-2" />
+        <Button
+          onClick={login}
+          className="bg-yellow-gradient text-black px-8 py-3 rounded-2xl font-iphone-bold transition-all duration-300 hover:-translate-y-1 hover:scale-105"
+        >
+          <Wallet className="w-5 h-5 mr-2" />
           Connect Wallet
         </Button>
       );
@@ -66,39 +69,43 @@ export function Navigation() {
       <div className="relative" ref={walletMenuRef}>
         <Button
           onClick={() => setIsWalletMenuOpen(!isWalletMenuOpen)}
-          className={`btn-primary text-white px-6 ${
-            isWrongNetwork ? "bg-red-600 hover:bg-red-700" : ""
+          className={`bg-yellow-gradient text-black px-8 py-3 rounded-2xl font-iphone-bold transition-all duration-300 hover:-translate-y-1 hover:scale-105 ${
+            isWrongNetwork ? "bg-yellow-600 hover:bg-yellow-700" : ""
           }`}
         >
-          <Wallet className="w-4 h-4 mr-2" />
+          <Wallet className="w-5 h-5 mr-2" />
           {isWrongNetwork ? "Wrong Network" : formatAddress(address)}
-          <ChevronDown className="w-4 h-4 ml-2" />
+          <ChevronDown className="w-5 h-5 ml-2" />
         </Button>
 
         {isWalletMenuOpen && (
-          <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-            <div className="p-4 border-b border-gray-100">
-              <div className="text-sm text-gray-600">Wallet Address</div>
-              <div className="font-mono text-sm text-gray-900">
+          <div className="absolute right-0 mt-3 w-72 bg-card/95 backdrop-blur-md rounded-2xl border border-border z-50">
+            <div className="p-6 border-b border-border">
+              <div className="text-sm font-iphone text-gray-600 mb-1">
+                Wallet Address
+              </div>
+              <div className="font-mono text-sm font-iphone-bold text-gray-900 mb-4">
                 {formatAddress(address)}
               </div>
-              <div className="text-sm text-gray-600 mt-2">Balance</div>
-              <div className="font-semibold text-gray-900">
+              <div className="text-sm font-iphone text-gray-600 mb-1">
+                Balance
+              </div>
+              <div className="text-lg font-iphone-black text-gray-700">
                 {formatBalance(balance)} CELO
               </div>
               {isWrongNetwork && (
-                <div className="mt-2">
+                <div className="mt-4">
                   <Button
                     onClick={switchToAlfajores}
                     size="sm"
-                    className="w-full bg-red-600 hover:bg-red-700"
+                    className="w-full bg-yellow-600 hover:bg-yellow-700 rounded-xl font-iphone-bold"
                   >
                     Switch to Alfajores
                   </Button>
                 </div>
               )}
             </div>
-            <div className="p-2">
+            <div className="p-4">
               <Button
                 onClick={() => {
                   logout();
@@ -106,7 +113,7 @@ export function Navigation() {
                 }}
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="w-full justify-start text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-xl font-iphone"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Disconnect
@@ -119,48 +126,50 @@ export function Navigation() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg">
+          <Link href="/" className="flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-2xl overflow-hidden bg-yellow-gradient">
               <Image
                 src="/CeloLend.png"
                 alt="CeloLend"
-                width={40}
-                height={40}
-                className="w-full h-full object-contain p-1"
+                width={48}
+                height={48}
+                className="w-full h-full object-contain p-2"
                 priority
               />
             </div>
-            <span className="font-bold text-xl text-foreground">CeloLend</span>
+            <span className="font-iphone-black text-2xl text-foreground">
+              CeloLend
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link
               href="/marketplace"
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-gray-600 transition-colors font-iphone text-lg"
             >
               Marketplace
             </Link>
             <Link
               href="/dashboard"
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-gray-600 transition-colors font-iphone text-lg"
             >
               Dashboard
             </Link>
             <Link
               href="/help"
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-gray-600 transition-colors font-iphone text-lg"
             >
               Help
             </Link>
             {!isVerified && (
               <Link
                 href="/onboarding"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-gray-600 transition-colors font-iphone text-lg"
               >
                 Get Started
               </Link>
@@ -184,26 +193,26 @@ export function Navigation() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-100">
-            <div className="flex flex-col space-y-4">
+          <div className="md:hidden py-6 border-t border-border bg-background backdrop-blur-md">
+            <div className="flex flex-col space-y-6">
               <Link
                 key="marketplace"
                 href="/marketplace"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-gray-600 transition-colors font-iphone text-lg py-2"
               >
                 Marketplace
               </Link>
               <Link
                 key="dashboard"
                 href="/dashboard"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-gray-600 transition-colors font-iphone text-lg py-2"
               >
                 Dashboard
               </Link>
               <Link
                 key="help"
                 href="/help"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-gray-600 transition-colors font-iphone text-lg py-2"
               >
                 Help
               </Link>
@@ -211,7 +220,7 @@ export function Navigation() {
                 <Link
                   key="onboarding"
                   href="/onboarding"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-gray-600 transition-colors font-iphone text-lg py-2"
                 >
                   Get Started
                 </Link>

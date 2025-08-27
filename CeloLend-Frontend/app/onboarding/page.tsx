@@ -325,14 +325,14 @@ export default function OnboardingPage() {
               )}
 
               {isWrongNetwork && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-5 h-5 bg-red-600 rounded-full"></div>
+                    <div className="w-5 h-5 bg-yellow-600 rounded-full"></div>
                     <div>
-                      <p className="font-semibold text-red-900">
+                      <p className="font-semibold text-yellow-900">
                         Wrong Network
                       </p>
-                      <p className="text-sm text-red-800">
+                      <p className="text-sm text-yellow-800">
                         Please switch to Alfajores testnet
                       </p>
                     </div>
@@ -340,7 +340,7 @@ export default function OnboardingPage() {
                   <Button
                     onClick={switchToAlfajores}
                     size="sm"
-                    className="mt-2 bg-red-600 hover:bg-red-700"
+                    className="mt-2 bg-yellow-600 hover:bg-yellow-700"
                   >
                     Switch to Alfajores
                   </Button>
@@ -577,7 +577,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-yellow-top-white-bottom">
       <Navigation />
 
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
@@ -605,7 +605,7 @@ export default function OnboardingPage() {
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                         isActive
-                          ? "bg-[#B03060] text-white"
+                          ? "bg-yellow-600 text-white"
                           : isCompleted
                           ? "bg-green-500 text-white"
                           : "bg-gray-200 text-foreground"

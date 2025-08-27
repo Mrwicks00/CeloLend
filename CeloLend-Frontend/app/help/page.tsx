@@ -254,7 +254,7 @@ export default function HelpPage() {
     const variants = {
       beginner: "bg-green-100 text-green-800",
       intermediate: "bg-yellow-100 text-yellow-800",
-      advanced: "bg-red-100 text-red-800",
+      advanced: "bg-yellow-100 text-yellow-800",
     };
     return (
       <Badge className={variants[difficulty as keyof typeof variants]}>
@@ -264,17 +264,17 @@ export default function HelpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-yellow-top-white-bottom">
       <Navigation />
 
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-foreground mb-4">
+            <h1 className="text-4xl font-iphone-black text-foreground mb-4">
               Help & Support
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-xl font-iphone text-foreground max-w-3xl mx-auto">
               Find answers to common questions, learn how to use the platform,
               or get in touch with our support team
             </p>

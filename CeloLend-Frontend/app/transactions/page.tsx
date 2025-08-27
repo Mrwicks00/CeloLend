@@ -205,11 +205,11 @@ export default function TransactionsPage() {
       case "deposit":
         return <Plus className="w-5 h-5 text-green-600" />;
       case "withdraw":
-        return <Minus className="w-5 h-5 text-red-600" />;
+        return <Minus className="w-5 h-5 text-yellow-600" />;
       case "repay":
         return <CheckCircle className="w-5 h-5 text-blue-600" />;
       case "liquidation":
-        return <AlertCircle className="w-5 h-5 text-red-600" />;
+        return <AlertCircle className="w-5 h-5 text-yellow-600" />;
       default:
         return <Clock className="w-5 h-5 text-muted-foreground" />;
     }
@@ -222,7 +222,7 @@ export default function TransactionsPage() {
       case "pending":
         return <Clock className="w-4 h-4 text-yellow-600" />;
       case "failed":
-        return <XCircle className="w-4 h-4 text-red-600" />;
+        return <XCircle className="w-4 h-4 text-yellow-600" />;
       case "cancelled":
         return <XCircle className="w-4 h-4 text-muted-foreground" />;
       default:
@@ -234,7 +234,7 @@ export default function TransactionsPage() {
     const variants = {
       completed: "bg-green-100 text-green-800",
       pending: "bg-yellow-100 text-yellow-800",
-      failed: "bg-red-100 text-red-800",
+      failed: "bg-yellow-100 text-yellow-800",
       cancelled: "bg-gray-100 text-gray-800",
     };
     return (
@@ -253,7 +253,7 @@ export default function TransactionsPage() {
       case "loan_due":
         return <Clock className="w-5 h-5 text-yellow-600" />;
       case "liquidation_warning":
-        return <AlertCircle className="w-5 h-5 text-red-600" />;
+        return <AlertCircle className="w-5 h-5 text-yellow-600" />;
       case "payment_received":
         return <CheckCircle className="w-5 h-5 text-green-600" />;
       case "loan_funded":
@@ -267,7 +267,7 @@ export default function TransactionsPage() {
 
   const getPriorityBadge = (priority: string) => {
     const variants = {
-      high: "bg-red-100 text-red-800",
+      high: "bg-yellow-100 text-yellow-800",
       medium: "bg-yellow-100 text-yellow-800",
       low: "bg-gray-100 text-gray-800",
     };
@@ -279,7 +279,7 @@ export default function TransactionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-yellow-top-white-bottom">
       <Navigation />
 
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
@@ -287,10 +287,10 @@ export default function TransactionsPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
+              <h1 className="text-3xl font-iphone-black text-foreground mb-2">
                 Transaction History
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-foreground font-iphone">
                 View your transaction history and notifications
               </p>
             </div>

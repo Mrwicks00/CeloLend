@@ -57,95 +57,95 @@ export function DashboardStats() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       {/* Total Lent */}
-      <Card className="border-0 shadow-lg bg-card">
+      <Card className="bg-card">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-iphone text-foreground mb-2">
                 Total Lent
               </p>
-              <p className="text-2xl font-bold text-card-foreground">
+              <p className="text-2xl font-iphone-black text-foreground mb-1">
                 {userStats ? formatUSDValue(userStats.totalLent) : "$0.00"}
               </p>
               {userStats && userStats.totalLent > BigInt(0) && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-iphone text-foreground">
                   {(Number(userStats.totalLent) / 1e18).toFixed(2)} CELO
                 </p>
               )}
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
-              <HandCoins className="w-6 h-6 text-primary-foreground" />
+            <div className="w-14 h-14 bg-yellow-gradient rounded-2xl flex items-center justify-center">
+              <HandCoins className="w-7 h-7 text-foreground" />
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Total Borrowed */}
-      <Card className="border-0 shadow-lg bg-card">
+      <Card className="bg-card">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-iphone text-foreground mb-2">
                 Total Borrowed
               </p>
-              <p className="text-2xl font-bold text-card-foreground">
+              <p className="text-2xl font-iphone-black text-foreground mb-1">
                 {userStats ? formatUSDValue(userStats.totalBorrowed) : "$0.00"}
               </p>
               {userStats && userStats.totalBorrowed > BigInt(0) && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-iphone text-foreground">
                   {(Number(userStats.totalBorrowed) / 1e18).toFixed(2)} CELO
                 </p>
               )}
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-accent to-primary rounded-lg flex items-center justify-center">
-              <ArrowDownRight className="w-6 h-6 text-primary-foreground" />
+            <div className="w-14 h-14 bg-yellow-gradient-dark rounded-2xl flex items-center justify-center">
+              <ArrowDownRight className="w-7 h-7 text-foreground" />
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Net APY */}
-      <Card className="border-0 shadow-lg bg-card">
+      <Card className="bg-card">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-iphone text-foreground mb-2">
                 Net APY
               </p>
-              <p className="text-2xl font-bold text-green-400">
+              <p className="text-2xl font-iphone-black text-foreground">
                 {userStats && userStats.totalLent > BigInt(0)
                   ? "+4.8%"
                   : "0.00%"}
               </p>
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-white" />
+            <div className="w-14 h-14 bg-yellow-gradient rounded-2xl flex items-center justify-center">
+              <TrendingUp className="w-7 h-7 text-foreground" />
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Credit Score */}
-      <Card className="border-0 shadow-lg bg-card">
+      <Card className="bg-card">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-iphone text-foreground mb-2">
                 Credit Score
               </p>
-              <div className="flex items-center space-x-2">
-                <p className="text-2xl font-bold text-primary">
+              <div className="flex items-center space-x-2 mb-1">
+                <p className="text-2xl font-iphone-black text-foreground">
                   {userStats ? userStats.creditScore : "N/A"}
                 </p>
                 <Badge
                   variant="secondary"
-                  className={`text-xs ${creditScoreInfo.color}`}
+                  className={`text-xs font-iphone ${creditScoreInfo.color}`}
                 >
                   {creditScoreInfo.label}
                 </Badge>
               </div>
               {userStats && (
-                <div className="mt-2 text-xs text-muted-foreground">
+                <div className="mt-2 text-xs font-iphone text-foreground">
                   <div className="flex justify-between">
                     <span>Loans: {userStats.completedLoans}</span>
                     <span>Defaults: {userStats.defaultedLoans}</span>
@@ -153,8 +153,8 @@ export function DashboardStats() {
                 </div>
               )}
             </div>
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-              <Shield className="w-6 h-6 text-primary-foreground" />
+            <div className="w-14 h-14 bg-yellow-gradient-dark rounded-2xl flex items-center justify-center">
+              <Shield className="w-7 h-7 text-foreground" />
             </div>
           </div>
         </CardContent>

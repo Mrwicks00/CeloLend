@@ -297,8 +297,8 @@ export function CreateLoanRequest() {
       return {
         status: "excellent",
         label: "Excellent",
-        color: "text-green-600",
-        bgColor: "bg-green-500",
+        color: "text-black",
+        bgColor: "bg-yellow-400",
         icon: CheckCircle,
       };
     if (ratio >= 150)
@@ -312,8 +312,8 @@ export function CreateLoanRequest() {
     return {
       status: "insufficient",
       label: "Insufficient",
-      color: "text-red-600",
-      bgColor: "bg-red-500",
+      color: "text-black",
+      bgColor: "bg-red-400",
       icon: AlertTriangle,
     };
   };
@@ -614,19 +614,19 @@ export function CreateLoanRequest() {
 
   if (!isVerified) {
     return (
-      <Card className="w-full max-w-4xl mx-auto bg-gradient-to-br from-red-50 to-pink-100 border-2 border-red-200">
+      <Card className="w-full max-w-4xl mx-auto bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200">
         <CardContent className="p-8 text-center">
-          <Shield className="w-12 h-12 mx-auto mb-4 text-red-600" />
-          <h2 className="text-xl font-semibold mb-2 text-red-900">
+          <Shield className="w-12 h-12 mx-auto mb-4 text-yellow-600" />
+          <h2 className="text-xl font-semibold mb-2 text-black">
             Verification Required
           </h2>
-          <p className="text-red-700">
+          <p className="text-black">
             Please complete identity verification before creating loan requests
           </p>
           <div className="mt-4">
             <Badge
               variant="outline"
-              className="text-sm border-red-400 text-red-800"
+              className="text-sm border-yellow-400 text-black"
             >
               Status: {verificationStatus}
             </Badge>
@@ -640,7 +640,7 @@ export function CreateLoanRequest() {
     <div className="w-full max-w-7xl mx-auto space-y-6 p-4">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-red-500 via-red-600 to-red-700 bg-clip-text text-transparent crypto-heading">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-500 via-yellow-600 to-yellow-700 bg-clip-text text-transparent crypto-heading">
           Create Loan Request
         </h1>
         <p className="text-muted-foreground mt-3 text-base font-medium">
@@ -656,7 +656,7 @@ export function CreateLoanRequest() {
           <Card className="card-crypto-info shadow-xl">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center space-x-2 text-xl crypto-title">
-                <DollarSign className="w-6 h-6 text-blue-700" />
+                <DollarSign className="w-6 h-6 text-yellow-600" />
                 <span className="font-bold">Loan Details</span>
               </CardTitle>
               <p className="text-sm text-muted-foreground font-medium">
@@ -744,14 +744,14 @@ export function CreateLoanRequest() {
                     className="h-12"
                   />
                   {loanAmountError && (
-                    <p className="text-sm text-red-600">{loanAmountError}</p>
+                    <p className="text-sm text-red-500">{loanAmountError}</p>
                   )}
-                  <p className="text-xs text-blue-700">
+                  <p className="text-xs text-yellow-600">
                     Min: {minLoanAmountFormatted} | Max:{" "}
                     {maxLoanAmountFormatted}
                   </p>
                   {selectedLoanToken && formData.amount && (
-                    <div className="text-base font-bold text-green-600 bg-green-50 px-3 py-2 rounded-lg border border-green-200">
+                    <div className="text-base font-bold text-black bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-200">
                       ≈ $
                       {(
                         parseFloat(formData.amount) *
@@ -803,7 +803,7 @@ export function CreateLoanRequest() {
           <Card className="card-crypto-success shadow-xl">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center space-x-2 text-xl crypto-title">
-                <Shield className="w-6 h-6 text-green-700" />
+                <Shield className="w-6 h-6 text-yellow-600" />
                 <span className="font-bold">Collateral Tokens</span>
               </CardTitle>
               <p className="text-sm text-muted-foreground font-medium">
@@ -812,7 +812,7 @@ export function CreateLoanRequest() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
-                <Label className="text-base font-medium text-green-900">
+                <Label className="text-base font-medium text-black">
                   Collateral Tokens
                 </Label>
                 <Button
@@ -821,7 +821,7 @@ export function CreateLoanRequest() {
                   size="sm"
                   onClick={addCollateralToken}
                   disabled={collateralTokens.length >= 5}
-                  className="border-green-500 text-green-600 hover:bg-green-50"
+                  className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Token
@@ -831,12 +831,10 @@ export function CreateLoanRequest() {
               {collateralTokens.map((collateral, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-3 gap-3 items-end p-4 bg-white rounded-lg border border-green-200"
+                  className="grid grid-cols-3 gap-3 items-end p-4 bg-white rounded-lg border border-yellow-200"
                 >
                   <div className="space-y-2">
-                    <Label className="text-green-900 font-semibold">
-                      Token
-                    </Label>
+                    <Label className="text-black font-semibold">Token</Label>
                     <Select
                       value={collateral.token}
                       onValueChange={(val) =>

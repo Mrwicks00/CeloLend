@@ -108,8 +108,8 @@ export function CreateLoanRequest() {
       return {
         status: "excellent",
         label: "Excellent",
-        color: "text-green-600",
-        bgColor: "bg-green-500",
+        color: "text-black",
+        bgColor: "bg-yellow-400",
         icon: CheckCircle,
       };
     if (ratio >= 150)
@@ -123,8 +123,8 @@ export function CreateLoanRequest() {
     return {
       status: "insufficient",
       label: "Insufficient",
-      color: "text-red-600",
-      bgColor: "bg-red-500",
+      color: "text-black",
+      bgColor: "bg-red-400",
       icon: AlertTriangle,
     };
   };
