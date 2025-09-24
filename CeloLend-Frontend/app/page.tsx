@@ -48,10 +48,10 @@ export default function LandingPage() {
           {/* Subtitle with enhanced styling */}
           <div className="mb-16">
             <div className="bg-card/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 lg:p-10 max-w-5xl mx-auto shadow-2xl">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl text-black font-iphone-black mb-6 max-w-4xl mx-auto leading-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl text-foreground font-iphone-black mb-6 max-w-4xl mx-auto leading-tight">
                 Secure peer-to-peer lending with identity-gated access
               </h2>
-              <p className="text-lg sm:text-xl lg:text-2xl text-black font-iphone-bold max-w-3xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl lg:text-2xl text-foreground font-iphone-bold max-w-3xl mx-auto leading-relaxed">
                 Support for CELO and Mento stablecoins with dynamic interest
                 rates and smart contract automation
               </p>
@@ -163,10 +163,10 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-iphone-black text-black mb-4">
+            <h2 className="text-3xl font-iphone-black text-foreground mb-4">
               Why Choose CeloLend?
             </h2>
-            <p className="text-lg font-iphone text-black max-w-2xl mx-auto">
+            <p className="text-lg font-iphone text-foreground max-w-2xl mx-auto">
               Experience verified P2P lending with multi-token support,
               real-time pricing, and automated repayment tracking
             </p>
@@ -238,10 +238,10 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-iphone-black text-black mb-4">
+            <h2 className="text-3xl font-iphone-black text-foreground mb-4">
               How It Works
             </h2>
-            <p className="text-lg font-iphone text-black max-w-2xl mx-auto">
+            <p className="text-lg font-iphone text-foreground max-w-2xl mx-auto">
               Simple steps to get your loan or start lending
             </p>
           </div>
@@ -249,12 +249,14 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-yellow-gradient rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                <span className="text-black font-iphone-black text-xl">1</span>
+                <span className="text-foreground font-iphone-black text-xl">
+                  1
+                </span>
               </div>
-              <h3 className="text-xl font-iphone-bold text-black mb-2">
+              <h3 className="text-xl font-iphone-bold text-foreground mb-2">
                 Connect & Verify
               </h3>
-              <p className="text-black font-iphone">
+              <p className="text-foreground font-iphone">
                 Connect your wallet or verify via phone number
               </p>
             </div>
@@ -264,12 +266,14 @@ export default function LandingPage() {
                 className="w-16 h-16 bg-yellow-gradient-dark rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce"
                 style={{ animationDelay: "0.5s" }}
               >
-                <span className="text-black font-iphone-black text-xl">2</span>
+                <span className="text-foreground font-iphone-black text-xl">
+                  2
+                </span>
               </div>
-              <h3 className="text-xl font-iphone-bold text-black mb-2">
+              <h3 className="text-xl font-iphone-bold text-foreground mb-2">
                 Deposit Collateral
               </h3>
-              <p className="text-black font-iphone">
+              <p className="text-foreground font-iphone">
                 Secure your loan with digital or tokenized assets
               </p>
             </div>
@@ -279,12 +283,14 @@ export default function LandingPage() {
                 className="w-16 h-16 bg-yellow-gradient rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce"
                 style={{ animationDelay: "1s" }}
               >
-                <span className="text-black font-iphone-black text-xl">3</span>
+                <span className="text-foreground font-iphone-black text-xl">
+                  3
+                </span>
               </div>
-              <h3 className="text-xl font-iphone-bold text-black mb-2">
+              <h3 className="text-xl font-iphone-bold text-foreground mb-2">
                 Get Funded
               </h3>
-              <p className="text-black font-iphone">
+              <p className="text-foreground font-iphone">
                 Receive your loan instantly to your wallet
               </p>
             </div>

@@ -182,32 +182,11 @@ contract LoanRepayment is ReentrancyGuard {
             // Native token (CELO)
             require(msg.value >= paymentAmount, "Insufficient CELO sent");
 
-            // If multi-lender (lender == CeloLend), split to all lenders
-            if (loan.lender == address(celoLend)) {
-                address[] memory lenders = celoLend.getLendersByLoan(loanId);
-                uint256 totalFunded = celoLend.getTotalFundedByLoan(loanId);
-                for (uint i = 0; i < lenders.length; i++) {
-                    address l = lenders[i];
-                    uint256 contributed = celoLend.getLenderContribution(
-                        loanId,
-                        l
-                    );
-                    if (contributed > 0) {
-                        uint256 share = (paymentAmount * contributed) /
-                            totalFunded;
-                        if (share > 0) {
-                            (bool ok, ) = payable(l).call{value: share}("");
-                            require(ok, "Lender payout failed");
-                        }
-                    }
-                }
-            } else {
-                // Single lender case
-                (bool success, ) = payable(loan.lender).call{
-                    value: paymentAmount
-                }("");
-                require(success, "Payment transfer failed");
-            }
+            // Simplified payment - send to lender directly
+            (bool success, ) = payable(loan.lender).call{value: paymentAmount}(
+                ""
+            );
+            require(success, "Payment transfer failed");
 
             // Refund excess
             if (msg.value > paymentAmount) {
@@ -219,34 +198,12 @@ contract LoanRepayment is ReentrancyGuard {
         } else {
             // ERC20 token
             require(msg.value == 0, "No ETH needed for ERC20 payment");
-            if (loan.lender == address(celoLend)) {
-                address[] memory lenders = celoLend.getLendersByLoan(loanId);
-                uint256 totalFunded = celoLend.getTotalFundedByLoan(loanId);
-                for (uint i = 0; i < lenders.length; i++) {
-                    address l = lenders[i];
-                    uint256 contributed = celoLend.getLenderContribution(
-                        loanId,
-                        l
-                    );
-                    if (contributed > 0) {
-                        uint256 share = (paymentAmount * contributed) /
-                            totalFunded;
-                        if (share > 0) {
-                            IERC20(loan.loanToken).transferFrom(
-                                msg.sender,
-                                l,
-                                share
-                            );
-                        }
-                    }
-                }
-            } else {
-                IERC20(loan.loanToken).transferFrom(
-                    msg.sender,
-                    loan.lender,
-                    paymentAmount
-                );
-            }
+            // Simplified ERC20 payment - send to lender directly
+            IERC20(loan.loanToken).transferFrom(
+                msg.sender,
+                loan.lender,
+                paymentAmount
+            );
         }
 
         // Calculate how much goes to interest vs principal

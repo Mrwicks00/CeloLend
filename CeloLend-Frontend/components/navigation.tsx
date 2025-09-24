@@ -131,7 +131,7 @@ export function Navigation() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-2xl overflow-hidden bg-yellow-gradient">
+            <div className="w-12 h-12 rounded-2xl overflow-hidden bg-transparent">
               <Image
                 src="/CeloLend.png"
                 alt="CeloLend"
@@ -225,6 +225,15 @@ export function Navigation() {
                   Get Started
                 </Link>
               )}
+              <div
+                key="theme-toggle"
+                className="flex items-center justify-between py-3 px-2 border border-border rounded-lg bg-card"
+              >
+                <span className="text-foreground font-iphone text-lg">
+                  Theme
+                </span>
+                <ThemeToggle />
+              </div>
               <div key="wallet-button">
                 <WalletButton />
               </div>

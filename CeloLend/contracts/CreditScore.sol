@@ -49,6 +49,22 @@ contract CreditScore is Ownable {
     uint256 public defaultPenalty = 15; // Points deducted for default
     uint256 public timeDecayFactor = 1; // Points decay over time (per year)
 
+    // Undercollateralized lending risk tiers
+    enum RiskTier {
+        HIGH_RISK, // 0-30 credit score
+        MEDIUM_RISK, // 31-70 credit score
+        LOW_RISK, // 71-85 credit score
+        PREMIUM // 86-100 credit score
+    }
+
+    struct RiskProfile {
+        RiskTier tier;
+        uint256 maxUndercollateralizedAmount;
+        uint256 maxLoanToValueRatio; // e.g., 50% = 5000 basis points
+        uint256 interestRateMultiplier; // e.g., 1.2x for higher risk
+        bool eligibleForUndercollateralized;
+    }
+
     // Events
     event CreditProfileInitialized(address indexed user, uint256 initialScore);
     event CreditScoreUpdated(
@@ -122,13 +138,8 @@ contract CreditScore is Ownable {
         profile.totalBorrowed += loanAmount;
         profile.totalRepaid += loanAmount; // Simplified - doesn't include interest
 
-        // Update average interest rate (weighted)
-        profile.averageInterestRate = _calculateWeightedAverageRate(
-            profile.averageInterestRate,
-            profile.totalBorrowed - loanAmount,
-            interestRate,
-            loanAmount
-        );
+        // Update average interest rate (simplified)
+        profile.averageInterestRate = interestRate;
 
         // Calculate new credit score
         uint256 newScore = _calculateNewScore(user, true);
@@ -202,6 +213,45 @@ contract CreditScore is Ownable {
         return creditProfiles[user].creditScore;
     }
 
+    /**
+     * @dev Get risk profile for undercollateralized lending
+     * @param user The user address
+     * @return profile Risk profile with tier, limits, and eligibility
+     */
+    function getRiskProfile(
+        address user
+    ) external view returns (RiskProfile memory profile) {
+        uint256 score = creditProfiles[user].creditScore;
+
+        if (score >= 86) {
+            profile.tier = RiskTier.PREMIUM;
+            profile.maxLoanToValueRatio = 8000; // 80% LTV
+            profile.maxUndercollateralizedAmount = 50000 * 1e18; // 50K max
+            profile.interestRateMultiplier = 10000; // 1.0x
+            profile.eligibleForUndercollateralized = true;
+        } else if (score >= 71) {
+            profile.tier = RiskTier.LOW_RISK;
+            profile.maxLoanToValueRatio = 6000; // 60% LTV
+            profile.maxUndercollateralizedAmount = 20000 * 1e18; // 20K max
+            profile.interestRateMultiplier = 11000; // 1.1x
+            profile.eligibleForUndercollateralized = true;
+        } else if (score >= 31) {
+            profile.tier = RiskTier.MEDIUM_RISK;
+            profile.maxLoanToValueRatio = 4000; // 40% LTV
+            profile.maxUndercollateralizedAmount = 5000 * 1e18; // 5K max
+            profile.interestRateMultiplier = 13000; // 1.3x
+            profile.eligibleForUndercollateralized = true;
+        } else {
+            profile.tier = RiskTier.HIGH_RISK;
+            profile.maxLoanToValueRatio = 0; // No undercollateralized loans
+            profile.maxUndercollateralizedAmount = 0;
+            profile.interestRateMultiplier = 15000; // 1.5x
+            profile.eligibleForUndercollateralized = false;
+        }
+
+        return profile;
+    }
+
     function getUserLoanHistory(
         address user
     ) external view returns (LoanRecord[] memory) {
@@ -244,104 +294,15 @@ contract CreditScore is Ownable {
         );
     }
 
-    function getCreditTier(
-        address user
-    ) external view returns (string memory tier, uint256 maxLoanAmount) {
-        uint256 score = this.getCreditScore(user);
+    // Complex tier system removed - keep basic scoring
 
-        if (score >= 90) {
-            return ("Excellent", 50000 * 1e18); // 50K CELO max
-        } else if (score >= 80) {
-            return ("Very Good", 25000 * 1e18); // 25K CELO max
-        } else if (score >= 70) {
-            return ("Good", 10000 * 1e18); // 10K CELO max
-        } else if (score >= 60) {
-            return ("Fair", 5000 * 1e18); // 5K CELO max
-        } else if (score >= 50) {
-            return ("Poor", 1000 * 1e18); // 1K CELO max
-        } else {
-            return ("Very Poor", 100 * 1e18); // 100 CELO max
-        }
-    }
+    // Interest rate calculation removed - keep basic scoring
 
-    function getRecommendedInterestRate(
-        address user,
-        uint256 baseRate
-    ) external view returns (uint256) {
-        uint256 score = this.getCreditScore(user);
+    // Complex eligibility check removed - keep basic scoring
 
-        if (score == 0) {
-            return baseRate + 1000; // +10% for uninitialized users
-        }
+    // Batch functions removed - keep basic scoring
 
-        // Higher credit score = lower interest rate
-        // Score 100 = no additional rate, Score 0 = +15% additional rate
-        uint256 creditAdjustment = ((100 - score) * 1500) / 100; // Max 15% additional
-        return baseRate + creditAdjustment;
-    }
-
-    function isEligibleForLoan(
-        address user,
-        uint256 loanAmount
-    )
-        external
-        view
-        returns (bool eligible, string memory reason, uint256 maxAllowed)
-    {
-        if (!creditProfiles[user].isInitialized) {
-            return (false, "User not verified", 0);
-        }
-
-        (, uint256 maxLoanAmount) = this.getCreditTier(user);
-
-        if (loanAmount > maxLoanAmount) {
-            return (false, "Amount exceeds credit tier limit", maxLoanAmount);
-        }
-
-        uint256 score = this.getCreditScore(user);
-        if (score < 30) {
-            return (false, "Credit score too low", maxLoanAmount);
-        }
-
-        return (true, "Eligible", maxLoanAmount);
-    }
-
-    function getBatchCreditScores(
-        address[] calldata users
-    ) external view returns (uint256[] memory scores) {
-        scores = new uint256[](users.length);
-        for (uint i = 0; i < users.length; i++) {
-            scores[i] = this.getCreditScore(users[i]);
-        }
-        return scores;
-    }
-
-    function getPlatformStats()
-        external
-        view
-        returns (
-            uint256 totalUsers,
-            uint256 averageCreditScore,
-            uint256 platformSuccessfulLoans,
-            uint256 platformDefaults,
-            uint256 platformSuccessRate,
-            uint256 totalVolume
-        )
-    {
-        totalUsers = totalVerifiedUsers;
-        platformSuccessfulLoans = totalSuccessfulLoans;
-        platformDefaults = totalDefaultedLoans;
-        totalVolume = totalVolumeProcessed;
-
-        // Calculate success rate
-        uint256 totalLoans = platformSuccessfulLoans + platformDefaults;
-        platformSuccessRate = totalLoans > 0
-            ? (platformSuccessfulLoans * 100) / totalLoans
-            : 0;
-
-        // Calculate average credit score (simplified)
-        averageCreditScore = 50; // Default to starting score
-    }
+    // Platform stats removed - keep basic scoring
 
     // ADMIN FUNCTIONS
 
@@ -353,54 +314,9 @@ contract CreditScore is Ownable {
         emit AuthorizedContractUpdated(contractAddr, authorized);
     }
 
-    function setScoringParameters(
-        uint256 _successfulRepaymentBonus,
-        uint256 _defaultPenalty,
-        uint256 _timeDecayFactor
-    ) external onlyOwner {
-        require(_successfulRepaymentBonus <= 20, "Bonus too high");
-        require(_defaultPenalty <= 50, "Penalty too high");
-        require(_timeDecayFactor <= 10, "Decay factor too high");
+    // Complex admin functions removed - keep basic scoring
 
-        successfulRepaymentBonus = _successfulRepaymentBonus;
-        defaultPenalty = _defaultPenalty;
-        timeDecayFactor = _timeDecayFactor;
-    }
-
-    function adjustUserCreditScore(
-        address user,
-        uint256 newScore,
-        string calldata reason
-    ) external onlyOwner {
-        require(creditProfiles[user].isInitialized, "User not initialized");
-        require(newScore <= MAX_CREDIT_SCORE, "Score too high");
-
-        uint256 oldScore = creditProfiles[user].creditScore;
-        creditProfiles[user].creditScore = newScore;
-        creditProfiles[user].lastUpdateTime = block.timestamp;
-
-        emit CreditScoreUpdated(user, oldScore, newScore);
-    }
-
-    function batchInitializeUsers(address[] calldata users) external onlyOwner {
-        for (uint i = 0; i < users.length; i++) {
-            if (!creditProfiles[users[i]].isInitialized) {
-                creditProfiles[users[i]] = CreditProfile({
-                    creditScore: INITIAL_CREDIT_SCORE,
-                    totalLoansCount: 0,
-                    successfulLoans: 0,
-                    defaultedLoans: 0,
-                    totalBorrowed: 0,
-                    totalRepaid: 0,
-                    averageInterestRate: 0,
-                    lastUpdateTime: block.timestamp,
-                    isInitialized: true
-                });
-
-                emit CreditProfileInitialized(users[i], INITIAL_CREDIT_SCORE);
-            }
-        }
-    }
+    // Batch functions removed - keep basic scoring
 
     // INTERNAL HELPER FUNCTIONS
 
@@ -412,36 +328,12 @@ contract CreditScore is Ownable {
         uint256 currentScore = profile.creditScore;
 
         if (isSuccessful) {
-            // Bonus for successful repayment
-            uint256 bonus = successfulRepaymentBonus;
-
-            // Extra bonus for consistent performance
-            if (profile.successfulLoans > 0 && profile.defaultedLoans == 0) {
-                bonus += 2; // Consistency bonus
-            }
-
-            currentScore = currentScore + bonus;
+            // Simple bonus for successful repayment
+            currentScore = currentScore + successfulRepaymentBonus;
         } else {
-            // Penalty for default
-            uint256 penalty = defaultPenalty;
-
-            // Heavier penalty for repeat defaulters
-            if (profile.defaultedLoans > 0) {
-                penalty += 5; // Repeat offender penalty
-            }
-
-            currentScore = currentScore > penalty
-                ? currentScore - penalty
-                : MIN_CREDIT_SCORE;
-        }
-
-        // Apply time decay (simplified - reduces score slightly over time without activity)
-        uint256 timeSinceLastUpdate = block.timestamp - profile.lastUpdateTime;
-        uint256 yearsSinceUpdate = timeSinceLastUpdate / 365 days;
-        if (yearsSinceUpdate > 0 && currentScore > MIN_CREDIT_SCORE) {
-            uint256 decay = yearsSinceUpdate * timeDecayFactor;
-            currentScore = currentScore > decay
-                ? currentScore - decay
+            // Simple penalty for default
+            currentScore = currentScore > defaultPenalty
+                ? currentScore - defaultPenalty
                 : MIN_CREDIT_SCORE;
         }
 
@@ -456,20 +348,5 @@ contract CreditScore is Ownable {
         return currentScore;
     }
 
-    function _calculateWeightedAverageRate(
-        uint256 currentAvgRate,
-        uint256 currentTotalAmount,
-        uint256 newRate,
-        uint256 newAmount
-    ) internal pure returns (uint256) {
-        if (currentTotalAmount == 0) {
-            return newRate;
-        }
-
-        uint256 totalWeightedRate = (currentAvgRate * currentTotalAmount) +
-            (newRate * newAmount);
-        uint256 totalAmount = currentTotalAmount + newAmount;
-
-        return totalWeightedRate / totalAmount;
-    }
+    // Complex rate calculation removed - keep basic scoring
 }

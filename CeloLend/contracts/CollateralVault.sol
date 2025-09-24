@@ -318,11 +318,8 @@ contract CollateralVault is Ownable, ReentrancyGuard {
     {
         require(supportedCollateralTokens[token], "Token not supported");
 
-        // Calculate liquidation amount (simplified - in production use price oracles)
-        uint256 liquidationValue = _calculateLiquidationValue(
-            token,
-            collateralAmount
-        );
+        // Calculate liquidation amount (simplified - 1:1 value)
+        uint256 liquidationValue = collateralAmount;
 
         // Calculate liquidation fee
         uint256 fee = (liquidationValue * liquidationFee) / BASIS_POINTS;
@@ -418,77 +415,11 @@ contract CollateralVault is Ownable, ReentrancyGuard {
         return userCollateralLoans[user];
     }
 
-    function getUserCollateralDetails(
-        address user
-    )
-        external
-        view
-        returns (
-            address[] memory tokens,
-            uint256[] memory amounts,
-            uint256[] memory loanIds
-        )
-    {
-        uint256[] memory loans = userCollateralLoans[user];
-        // Legacy: return one entry per loan (first token)
-        tokens = new address[](loans.length);
-        amounts = new uint256[](loans.length);
-        loanIds = new uint256[](loans.length);
-        for (uint i = 0; i < loans.length; i++) {
-            CollateralDeposit memory deposit = loanCollateral[loans[i]];
-            tokens[i] = deposit.token;
-            amounts[i] = deposit.amount;
-            loanIds[i] = deposit.loanId;
-        }
+    // Complex details function removed - keep basic getters
 
-        return (tokens, amounts, loanIds);
-    }
+    // V2 complex details removed - keep basic getters
 
-    // V2 details: flattened arrays, one entry per token per loan
-    function getUserCollateralDetailsV2(
-        address user
-    )
-        external
-        view
-        returns (
-            address[] memory tokens,
-            uint256[] memory amounts,
-            uint256[] memory loanIds
-        )
-    {
-        uint256[] memory loans = userCollateralLoans[user];
-        // Count entries
-        uint256 count = 0;
-        for (uint i = 0; i < loans.length; i++) {
-            count += loanCollateralTokens[loans[i]].length;
-        }
-        tokens = new address[](count);
-        amounts = new uint256[](count);
-        loanIds = new uint256[](count);
-        uint256 idx = 0;
-        for (uint i = 0; i < loans.length; i++) {
-            uint256 loanId = loans[i];
-            address[] memory tks = loanCollateralTokens[loanId];
-            for (uint j = 0; j < tks.length; j++) {
-                address t = tks[j];
-                tokens[idx] = t;
-                amounts[idx] = loanTokenAmounts[loanId][t];
-                loanIds[idx] = loanId;
-                idx++;
-            }
-        }
-        return (tokens, amounts, loanIds);
-    }
-
-    function getTotalValueLocked() external view returns (uint256 totalValue) {
-        // Sum up all locked tokens (simplified 1:1 USD value)
-        // In practice, you'd use price oracle for accurate USD values
-        totalValue = 0;
-
-        // This is a basic implementation - could be enhanced with price oracle integration
-        // For now, just return a count-based approximation
-        return totalDepositsCount * 1000 * 1e18; // Estimated average deposit value
-    }
+    // Complex TVL calculation removed - keep basic getters
 
     function getTokenTotalLocked(
         address token
@@ -496,72 +427,11 @@ contract CollateralVault is Ownable, ReentrancyGuard {
         return tokenTotalLocked[token];
     }
 
-    // Loan-level collateral details (multi-collateral)
-    function getLoanCollateralDetails(
-        uint256 loanId
-    )
-        external
-        view
-        returns (address[] memory tokens, uint256[] memory amounts)
-    {
-        address[] memory tks = loanCollateralTokens[loanId];
-        tokens = new address[](tks.length);
-        amounts = new uint256[](tks.length);
-        for (uint i = 0; i < tks.length; i++) {
-            tokens[i] = tks[i];
-            amounts[i] = loanTokenAmounts[loanId][tks[i]];
-        }
-        return (tokens, amounts);
-    }
+    // Complex loan details removed - keep basic getters
 
-    /**
-     * @notice Get user's collateral positions grouped by loan
-     * @param user The user address
-     * @return loanIds Array of loan IDs
-     * @return tokens Array of arrays of token addresses per loan
-     * @return amounts Array of arrays of amounts per loan
-     */
-    function getUserCollateralPositions(
-        address user
-    )
-        external
-        view
-        returns (
-            uint256[] memory loanIds,
-            address[][] memory tokens,
-            uint256[][] memory amounts
-        )
-    {
-        uint256[] memory userLoans = userCollateralLoans[user];
-        address[][] memory allTokens = new address[][](userLoans.length);
-        uint256[][] memory allAmounts = new uint256[][](userLoans.length);
+    // Complex positions function removed - keep basic getters
 
-        for (uint i = 0; i < userLoans.length; i++) {
-            uint256 loanId = userLoans[i];
-            (
-                address[] memory loanTokens,
-                uint256[] memory loanAmounts
-            ) = this.getLoanCollateralDetails(loanId);
-            allTokens[i] = loanTokens;
-            allAmounts[i] = loanAmounts;
-        }
-
-        return (userLoans, allTokens, allAmounts);
-    }
-
-    function getVaultStats()
-        external
-        view
-        returns (
-            uint256 totalDeposits,
-            uint256 activeLoans,
-            uint256 liquidationFeeRate
-        )
-    {
-        totalDeposits = totalDepositsCount;
-        activeLoans = activeLoansCount;
-        liquidationFeeRate = liquidationFee;
-    }
+    // Complex stats removed - keep basic getters
 
     function isTokenSupported(address token) external view returns (bool) {
         return supportedCollateralTokens[token];
@@ -573,33 +443,7 @@ contract CollateralVault is Ownable, ReentrancyGuard {
         return liquidationThresholds[token];
     }
 
-    function getCollateralHealth(
-        uint256 loanId,
-        uint256 loanValue
-    )
-        external
-        view
-        returns (uint256 collateralValue, uint256 healthFactor, bool isHealthy)
-    {
-        CollateralDeposit memory deposit = loanCollateral[loanId];
-
-        // Simplified calculation - use oracle prices in production
-        collateralValue = _calculateLiquidationValue(
-            deposit.token,
-            deposit.amount
-        );
-
-        if (loanValue == 0) {
-            healthFactor = type(uint256).max;
-            isHealthy = true;
-        } else {
-            healthFactor = (collateralValue * BASIS_POINTS) / loanValue;
-            uint256 threshold = liquidationThresholds[deposit.token];
-            isHealthy = healthFactor > threshold;
-        }
-
-        return (collateralValue, healthFactor, isHealthy);
-    }
+    // Complex health check removed - keep basic getters
 
     // ADMIN FUNCTIONS
 
@@ -632,47 +476,11 @@ contract CollateralVault is Ownable, ReentrancyGuard {
         emit LiquidationFeeUpdated(newFee);
     }
 
-    // Batch set supported tokens (for initial setup)
-    function batchSetSupportedTokens(
-        address[] calldata tokens,
-        bool[] calldata supported,
-        uint256[] calldata thresholds
-    ) external onlyOwner {
-        require(
-            tokens.length == supported.length &&
-                tokens.length == thresholds.length,
-            "Array length mismatch"
-        );
-
-        for (uint i = 0; i < tokens.length; i++) {
-            supportedCollateralTokens[tokens[i]] = supported[i];
-            if (thresholds[i] > 0) {
-                liquidationThresholds[tokens[i]] = thresholds[i];
-            }
-        }
-    }
+    // Complex batch functions removed - keep basic admin
 
     // INTERNAL FUNCTIONS
 
-    function _calculateLiquidationValue(
-        address token,
-        uint256 amount
-    ) internal view returns (uint256) {
-        // Use price oracle for accurate liquidation value calculation
-        if (address(priceOracle) == address(0)) {
-            // Fallback to 1:1 if oracle not set
-            return amount;
-        }
-
-        try
-            priceOracle.calculateLiquidationValue(token, amount, liquidationFee)
-        returns (uint256 value) {
-            return value;
-        } catch {
-            // Fallback calculation if oracle fails
-            return amount;
-        }
-    }
+    // Complex liquidation calculation removed - keep basic functions
 
     function _removeUserCollateralLoan(address user, uint256 loanId) internal {
         uint256[] storage loans = userCollateralLoans[user];

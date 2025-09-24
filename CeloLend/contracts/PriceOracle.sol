@@ -213,79 +213,9 @@ contract PriceOracle is Ownable {
         return rate;
     }
 
-    /**
-     * @dev Calculate collateral ratio for a loan
-     * @param collateralToken The collateral token address
-     * @param collateralAmount The collateral amount
-     * @param loanToken The loan token address
-     * @param loanAmount The loan amount
-     * @return ratio Collateral ratio in basis points (10000 = 100%)
-     */
-    function calculateCollateralRatio(
-        address collateralToken,
-        uint256 collateralAmount,
-        address loanToken,
-        uint256 loanAmount
-    ) external view returns (uint256 ratio) {
-        uint256 collateralValueUSD = this.getTokenValueInUSD(
-            collateralToken,
-            collateralAmount
-        );
-        uint256 loanValueUSD = this.getTokenValueInUSD(loanToken, loanAmount);
+    // Complex collateral ratio calculation removed - keep basic price feeds
 
-        require(loanValueUSD > 0, "Invalid loan value");
-
-        // Ratio = (collateralValue / loanValue) * 10000
-        ratio = (collateralValueUSD * 10000) / loanValueUSD;
-        return ratio;
-    }
-
-    /**
-     * @dev Check if collateral is sufficient for a loan
-     * @param collateralToken The collateral token address
-     * @param collateralAmount The collateral amount
-     * @param loanToken The loan token address
-     * @param loanAmount The loan amount
-     * @param minRatio Minimum required ratio in basis points
-     * @return sufficient Whether collateral is sufficient
-     */
-    function isCollateralSufficient(
-        address collateralToken,
-        uint256 collateralAmount,
-        address loanToken,
-        uint256 loanAmount,
-        uint256 minRatio
-    ) external view returns (bool sufficient) {
-        uint256 currentRatio = this.calculateCollateralRatio(
-            collateralToken,
-            collateralAmount,
-            loanToken,
-            loanAmount
-        );
-
-        return currentRatio >= minRatio;
-    }
-
-    /**
-     * @dev Calculate liquidation value for collateral
-     * @param token The collateral token
-     * @param amount The collateral amount
-     * @param discountBps Liquidation discount in basis points
-     * @return liquidationValue The liquidation value in USD (8 decimals)
-     */
-    function calculateLiquidationValue(
-        address token,
-        uint256 amount,
-        uint256 discountBps
-    ) external view returns (uint256 liquidationValue) {
-        uint256 marketValue = this.getTokenValueInUSD(token, amount);
-
-        // Apply liquidation discount
-        uint256 discount = (marketValue * discountBps) / 10000;
-        liquidationValue = marketValue - discount;
-
-        return liquidationValue;
-    }
+    // Complex collateral checks removed - keep basic price feeds
 
     // ADMIN FUNCTIONS
 
@@ -316,131 +246,13 @@ contract PriceOracle is Ownable {
         emit TokenSupportUpdated(token, supported);
     }
 
-    /**
-     * @dev Batch set token support
-     * @param tokens Array of token addresses
-     * @param supported Array of support statuses
-     * @param decimalsArray Array of token decimals
-     */
-    function batchSetTokenSupport(
-        address[] calldata tokens,
-        bool[] calldata supported,
-        uint8[] calldata decimalsArray
-    ) external onlyOwner {
-        require(
-            tokens.length == supported.length &&
-                tokens.length == decimalsArray.length,
-            "Array length mismatch"
-        );
+    // Complex batch functions removed - keep basic admin
 
-        for (uint i = 0; i < tokens.length; i++) {
-            supportedTokens[tokens[i]] = supported[i];
-            tokenDecimals[tokens[i]] = decimalsArray[i];
-            emit TokenSupportUpdated(tokens[i], supported[i]);
-        }
-    }
+    // Complex Mento integration removed - keep basic price feeds
 
-    /**
-     * @dev Set MentoIntegration contract
-     * @param _mentoIntegration Address of MentoIntegration contract
-     */
-    function setMentoIntegration(address _mentoIntegration) external onlyOwner {
-        require(
-            _mentoIntegration != address(0),
-            "Invalid MentoIntegration address"
-        );
-        mentoIntegration = MentoIntegration(_mentoIntegration);
+    // Complex Mento price feed updates removed - keep basic price feeds
 
-        // Re-initialize Mento tokens with new integration
-        if (address(mentoIntegration) != address(0)) {
-            _initializeMentoTokens();
-        }
-    }
-
-    /**
-     * @dev Update Mento stablecoin price feeds
-     * @param cUSDFeed Chainlink feed for cUSD/USD
-     * @param cEURFeed Chainlink feed for cEUR/USD
-     * @param cREALFeed Chainlink feed for cREAL/USD
-     */
-    function updateMentoPriceFeeds(
-        address cUSDFeed,
-        address cEURFeed,
-        address cREALFeed
-    ) external onlyOwner {
-        // Get Mento token addresses from integration contract
-        if (address(mentoIntegration) != address(0)) {
-            (
-                address[] memory tokens,
-                string[] memory symbols,
-
-            ) = mentoIntegration.getSupportedStablecoins();
-
-            for (uint i = 0; i < tokens.length; i++) {
-                if (
-                    keccak256(bytes(symbols[i])) == keccak256(bytes("cUSD")) &&
-                    cUSDFeed != address(0)
-                ) {
-                    priceFeeds[tokens[i]] = AggregatorV3Interface(cUSDFeed);
-                    emit PriceFeedUpdated(tokens[i], cUSDFeed);
-                } else if (
-                    keccak256(bytes(symbols[i])) == keccak256(bytes("cEUR")) &&
-                    cEURFeed != address(0)
-                ) {
-                    priceFeeds[tokens[i]] = AggregatorV3Interface(cEURFeed);
-                    emit PriceFeedUpdated(tokens[i], cEURFeed);
-                } else if (
-                    keccak256(bytes(symbols[i])) == keccak256(bytes("cREAL")) &&
-                    cREALFeed != address(0)
-                ) {
-                    priceFeeds[tokens[i]] = AggregatorV3Interface(cREALFeed);
-                    emit PriceFeedUpdated(tokens[i], cREALFeed);
-                }
-            }
-        }
-    }
-
-    /**
-     * @dev Get price volatility for algorithmic interest rate models
-     * @param token The token address
-     * @param timeWindow Time window in seconds for volatility calculation
-     * @return volatility Volatility as a percentage (basis points)
-     */
-    function getPriceVolatility(
-        address token,
-        uint256 timeWindow
-    ) external view returns (uint256 volatility) {
-        // Simplified volatility calculation - in production, this would analyze historical price data
-        // For now, return different volatility levels based on token type
-
-        if (
-            address(mentoIntegration) != address(0) &&
-            mentoIntegration.isStablecoin(token)
-        ) {
-            return 50; // 0.5% volatility for stablecoins (basis points)
-        } else if (token == NATIVE_TOKEN) {
-            return 2000; // 20% volatility for native CELO
-        } else if (token == USDC_TESTNET) {
-            return 100; // 1% volatility for USDC
-        }
-
-        return 1500; // Default 15% volatility
-    }
-
-    /**
-     * @dev Get risk-adjusted price for algorithmic models
-     * @param token The token address
-     * @param riskMultiplier Risk multiplier (basis points, 10000 = 1x)
-     * @return adjustedPrice Risk-adjusted price
-     */
-    function getRiskAdjustedPrice(
-        address token,
-        uint256 riskMultiplier
-    ) external view returns (uint256 adjustedPrice) {
-        uint256 basePrice = this.getLatestPrice(token);
-        adjustedPrice = (basePrice * riskMultiplier) / 10000;
-        return adjustedPrice;
-    }
+    // Complex volatility and risk functions removed - keep basic price feeds
 
     // GETTER FUNCTIONS
 
